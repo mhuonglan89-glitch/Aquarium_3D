@@ -18,3 +18,4 @@ if %ERRORLEVEL% EQU 0 (
     echo [THAT BAI] Co loi trong qua trinh bien dich!
 )
 pause
+

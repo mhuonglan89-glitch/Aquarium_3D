@@ -138,3 +138,4 @@
 ### Cách 2: Chạy bản mô phỏng WebGL trực tiếp trên trình duyệt
 1. Nhấp đúp mở file `aquarium_tunnel_walkthrough.html` (hoặc `index.html`) trên bất kỳ trình duyệt nào (Chrome, Edge, Firefox).
 2. Trải nghiệm đồ họa 3D Three.js với âm thanh vòm Web Audio, các hiệu ứng Caustics, sương mù đại dương và bảng điều khiển Museum HUD đầy đủ.
+
