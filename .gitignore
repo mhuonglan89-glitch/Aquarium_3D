@@ -1,0 +1,17 @@
+# Visual Studio, C++, MinGW
+.vs/
+out/
+build/
+bin/
+obj/
+*.exe
+*.obj
+*.o
+*.log
+*.tlog
+*.idb
+*.pdb
+*.ilk
+*.suo
+*.user
+.vscode/
