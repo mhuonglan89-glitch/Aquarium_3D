@@ -19,7 +19,7 @@ const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
 // Khởi tạo Camera tại vị trí sàn hầm kính (Bạn A)
-Camera camera(glm::vec3(0.0f, 35.0f, 0.0f));
+Camera camera(glm::vec3(0.0f, 35.0f, -200.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -35,12 +35,15 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 int main() {
     // 1. Khởi tạo GLFW
-    glfwInit();
+    if (!glfwInit()) {
+        std::cerr << "[ERROR] Khong the khoi tao GLFW!" << std::endl;
+        return -1;
+    }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D Aquarium Simulation - Thuy Cung 3D", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "MOH HINH THUY CUNG 3D - INTERACTIVE 3D AQUARIUM", NULL, NULL);
     if (window == NULL) {
         std::cerr << "[ERROR] Khong the khoi tao cua so GLFW!" << std::endl;
         glfwTerminate();
@@ -66,11 +69,13 @@ int main() {
 
     // 3. Khởi tạo Shaders & Tài nguyên 3D (Của BẠN B)
     Shader oceanShader("assets/shaders/ocean_fog.vs", "assets/shaders/ocean_fog.fs");
-    Model whaleShark("assets/models/whale_shark.obj", glm::vec3(0.18f, 0.28f, 0.38f));      // Cá mập voi
-    Model eagleRay("assets/models/spotted_eagle_ray.obj", glm::vec3(0.12f, 0.16f, 0.22f));  // Cá đuối đốm
-    Model clownfish("assets/models/clownfish.obj", glm::vec3(0.95f, 0.45f, 0.08f));         // Cá hề Nemo
-    Model coralReef("assets/models/coral_reef.obj", glm::vec3(0.85f, 0.22f, 0.35f));        // Rạn san hô
-    ParticleSystem bubbles(80); // 80 hạt bọt khí nổi
+    
+    // Nạp Models và Texture thật
+    Model whaleShark("assets/models/whale_shark.obj", glm::vec3(0.18f, 0.28f, 0.38f), "assets/textures/shark_diffuse.jpg");
+    Model eagleRay("assets/models/spotted_eagle_ray.obj", glm::vec3(0.12f, 0.16f, 0.22f), "assets/textures/ray_texture.png");
+    Model clownfish("assets/models/clownfish.obj", glm::vec3(0.95f, 0.45f, 0.08f));
+    Model coralReef("assets/models/coral_reef.obj", glm::vec3(0.85f, 0.22f, 0.35f), "assets/textures/coral_base.png");
+    ParticleSystem bubbles(100); // 100 hạt bọt khí nổi li ti
 
     // 4. Khởi tạo Vòm kính & Quỹ đạo Bézier 3D (Của BẠN A)
     Tunnel glassTunnel(160.0f, 1500.0f); // Bán kính vòm 160, dài 1500
@@ -96,6 +101,7 @@ int main() {
     std::cout << "  - Phim W, A, S, D : Buoc di trong ham kinh\n";
     std::cout << "  - Chuot           : Xoay goc nhin 360 do\n";
     std::cout << "  - Phim [SPACE]    : Xuyen kinh hoa minh vao nuoc (100% khong kinh)\n";
+    std::cout << "  - Phim E / Q      : Ngoi len / Lan xuong (khi lan bien)\n";
     std::cout << "  - Phim ESC        : Thoat chuong trinh\n";
     std::cout << "========================================================\n";
 
@@ -105,7 +111,7 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Xử lý sự kiện bàn phím (Bạn A: WASD & SPACE)
+        // Xử lý sự kiện bàn phím (Bạn A: WASD & SPACE LERP)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         camera.ProcessKeyboard(window, deltaTime);
@@ -125,20 +131,23 @@ int main() {
         oceanShader.setMat4("view", view);
 
         // --------------------------------------------------------------------
-        // BƯỚC 1: VẼ SINH VẬT BIỂN (Vẽ trước các vật thể đặc bên ngoài)
+        // BƯỚC 1: VẼ SINH VẬT BIỂN (Vật thể đặc bên ngoài vẽ trước)
         // --------------------------------------------------------------------
-        // 1.1 Cá mập voi bơi theo đường cong Bézier (Bạn A tính toán, Bạn B vẽ)
+        // 1.1 Cá mập voi bơi theo đường cong Bézier 3D (Bạn A tính toán, Bạn B vẽ)
         static float tShark = 0.0f;
         tShark += deltaTime * 0.035f;
         if (tShark > 1.0f) tShark = 0.0f;
         glm::vec3 sharkPos = sharkPath.GetPoint(tShark);
         float sharkAngle = sharkPath.GetFacingAngle(tShark);
+        float sharkPitch = sharkPath.GetPitchAngle(tShark);
 
         glm::mat4 modelShark = glm::mat4(1.0f);
         modelShark = glm::translate(modelShark, sharkPos);
         modelShark = glm::rotate(modelShark, sharkAngle, glm::vec3(0, 1, 0));
+        modelShark = glm::rotate(modelShark, sharkPitch, glm::vec3(1, 0, 0));
         modelShark = glm::scale(modelShark, glm::vec3(1.8f));
         oceanShader.setMat4("model", modelShark);
+        oceanShader.setBool("isFish", true);
         whaleShark.Draw(oceanShader);
 
         // 1.2 Cá đuối đốm lướt trên nóc vòm kính
@@ -147,22 +156,33 @@ int main() {
         if (tRay > 1.0f) tRay = 0.0f;
         glm::vec3 rayPos = rayPath.GetPoint(tRay);
         float rayAngle = rayPath.GetFacingAngle(tRay);
+        float rayPitch = rayPath.GetPitchAngle(tRay);
 
         glm::mat4 modelRay = glm::mat4(1.0f);
         modelRay = glm::translate(modelRay, rayPos);
         modelRay = glm::rotate(modelRay, rayAngle, glm::vec3(0, 1, 0));
+        modelRay = glm::rotate(modelRay, rayPitch, glm::vec3(1, 0, 0));
         modelRay = glm::scale(modelRay, glm::vec3(1.4f));
         oceanShader.setMat4("model", modelRay);
+        oceanShader.setBool("isFish", false);
         eagleRay.Draw(oceanShader);
 
         // 1.3 Rạn san hô cố định ở đáy cát
-        glm::mat4 modelCoral = glm::mat4(1.0f);
-        modelCoral = glm::translate(modelCoral, glm::vec3(220.0f, -120.0f, 150.0f));
-        modelCoral = glm::scale(modelCoral, glm::vec3(2.5f));
-        oceanShader.setMat4("model", modelCoral);
+        oceanShader.setBool("isFish", false);
+        glm::mat4 modelCoral1 = glm::mat4(1.0f);
+        modelCoral1 = glm::translate(modelCoral1, glm::vec3(220.0f, -120.0f, 150.0f));
+        modelCoral1 = glm::scale(modelCoral1, glm::vec3(2.5f));
+        oceanShader.setMat4("model", modelCoral1);
+        coralReef.Draw(oceanShader);
+
+        glm::mat4 modelCoral2 = glm::mat4(1.0f);
+        modelCoral2 = glm::translate(modelCoral2, glm::vec3(-220.0f, -130.0f, -100.0f));
+        modelCoral2 = glm::scale(modelCoral2, glm::vec3(2.0f));
+        oceanShader.setMat4("model", modelCoral2);
         coralReef.Draw(oceanShader);
 
         // 1.4 Đàn cá hề bơi quanh rạn san hô
+        oceanShader.setBool("isFish", true);
         for (int i = 0; i < 6; ++i) {
             float phase = currentFrame * 1.5f + i * 1.0f;
             glm::vec3 cfPos = glm::vec3(
@@ -179,17 +199,16 @@ int main() {
         }
 
         // 1.5 Hệ hạt bọt khí nổi lên từ đáy biển (Bạn B)
+        oceanShader.setBool("isFish", false);
         bubbles.UpdateAndRender(deltaTime, camera.Position, oceanShader);
 
         // --------------------------------------------------------------------
         // BƯỚC 2: VẼ HẦM KÍNH THỦY CUNG (Chỉ vẽ khi ở Chế độ 1 trong hầm)
-        // Khi camera.isDiving == true (Bấm SPACE), ẩn hoàn toàn hầm kính!
+        // Khi camera.isDiving == true (Bấm SPACE), ẩn hoàn toàn hầm kính (100% không kính)!
         // --------------------------------------------------------------------
         if (!camera.isDiving) {
             glm::mat4 modelTunnel = glm::mat4(1.0f);
             oceanShader.setMat4("model", modelTunnel);
-            oceanShader.setVec3("objectColor", glm::vec3(0.12f, 0.16f, 0.22f)); // Màu khung thép
-            oceanShader.setFloat("alphaVal", 0.35f);                             // Độ trong suốt kính
             glassTunnel.Draw(oceanShader);
         }
 

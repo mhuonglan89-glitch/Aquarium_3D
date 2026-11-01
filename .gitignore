@@ -5,8 +5,10 @@ build/
 bin/
 obj/
 *.exe
-*.obj
+# Object files from build
 *.o
+*.obj
+!assets/models/*.obj
 *.log
 *.tlog
 *.idb

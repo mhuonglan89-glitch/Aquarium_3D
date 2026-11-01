@@ -4,8 +4,8 @@
 
 /**
  * @file BezierPath.h
- * @brief Thuật toán đường cong Bézier 3D bậc 3 dẫn đường đàn cá
- * @author Bạn A (Backend / Math & Bezier) - Môn Đồ Họa Máy Tính (Chương CG.5)
+ * @brief Thuật toán đường cong Bézier 3D bậc 3 dẫn đường đàn cá & Ma trận phân cấp
+ * @author Bạn A (Backend / Math & Bezier) - Môn Đồ Họa Máy Tính (Chương CG.5: Curves and Surfaces & CG.3: Hierarchy)
  */
 class BezierPath {
 public:
@@ -37,17 +37,25 @@ public:
         glm::vec3 d = 3.0f * u * u * (P1 - P0)
                     + 6.0f * u * t * (P2 - P1)
                     + 3.0f * t * t * (P3 - P2);
+        if (glm::length(d) < 0.0001f) return glm::vec3(0.0f, 0.0f, 1.0f);
         return glm::normalize(d);
     }
 
-    // Tính góc xoay đầu cá trên mặt phẳng nằm ngang XZ
+    // Tính góc xoay đầu cá trên mặt phẳng nằm ngang XZ (Yaw)
     float GetFacingAngle(float t) const {
         glm::vec3 tangent = GetTangent(t);
         return atan2(tangent.x, tangent.z);
     }
 
-    // Hàm ma trận phân cấp uốn vây đuôi cá theo thời gian: sin(t * omega) * amplitude
-    static float CalculateTailWag(float time, float speed = 8.0f, float amplitudeDeg = 20.0f) {
+    // Tính góc nghiêng đầu cá khi bơi lặn lên/xuống (Pitch)
+    float GetPitchAngle(float t) const {
+        glm::vec3 tangent = GetTangent(t);
+        float horizLen = std::sqrt(tangent.x * tangent.x + tangent.z * tangent.z);
+        return atan2(tangent.y, horizLen);
+    }
+
+    // Hàm ma trận phân cấp uốn vây đuôi cá theo thời gian: sin(t * omega) * amplitude (Chương CG.3)
+    static float CalculateTailWag(float time, float speed = 6.0f, float amplitudeDeg = 18.0f) {
         return sin(time * speed) * glm::radians(amplitudeDeg);
     }
 };
