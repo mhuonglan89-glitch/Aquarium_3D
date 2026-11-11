@@ -223,28 +223,39 @@
     floor.position.set(0, 0, 0);
     tunnelGroup.add(floor);
 
-    // Dải đèn LED neon xanh ngọc dẫn lối 2 bên mép chân tường
-    const ledMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-    const ledGeo = new THREE.CylinderGeometry(0.18, 0.18, TUNNEL_LENGTH, 8);
+    // Khung dầm chắn lan can 2 bên lối đi bộ (Walkway Parapets - Chuẩn ảnh mẫu quốc tế)
+    const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4, metalness: 0.6 });
+    const barrierGeo = new THREE.BoxGeometry(0.9, 0.9, TUNNEL_LENGTH);
+    const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+    leftBarrier.position.set(-7.5, 0.45, 0);
+    tunnelGroup.add(leftBarrier);
+    const rightBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+    rightBarrier.position.set(7.5, 0.45, 0);
+    tunnelGroup.add(rightBarrier);
+
+    // Dải đèn LED neon xanh ngọc dẫn lối rực rỡ dưới chân bệ chắn
+    const ledMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+    const ledGeo = new THREE.CylinderGeometry(0.12, 0.12, TUNNEL_LENGTH, 8);
     const leftLed = new THREE.Mesh(ledGeo, ledMat);
     leftLed.rotation.x = Math.PI / 2;
-    leftLed.position.set(-floorWidth / 2 + 0.4, 0.15, 0);
+    leftLed.position.set(-7.0, 0.12, 0);
     tunnelGroup.add(leftLed);
 
     const rightLed = new THREE.Mesh(ledGeo, ledMat);
     rightLed.rotation.x = Math.PI / 2;
-    rightLed.position.set(floorWidth / 2 - 0.4, 0.15, 0);
+    rightLed.position.set(7.0, 0.12, 0);
     tunnelGroup.add(rightLed);
 
-    // Trụ Kiosk thông tin điện tử dọc lối đi
-    const kioskMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 });
+    // Trụ Kiosk thông tin điện tử gắn nghiêng 45 độ trên thành bệ chắn
+    const kioskMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
     const screenMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
     for (let k = -60; k <= 60; k += 40) {
-      const kioskBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.2, 0.6), kioskMat);
-      kioskBase.position.set(floorWidth / 2 - 2.5, 1.1, k);
-      const kioskScreen = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.8), screenMat);
-      kioskScreen.position.set(floorWidth / 2 - 2.5, 2.3, k);
-      kioskScreen.rotation.y = -Math.PI / 4;
+      const kioskBase = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.7), kioskMat);
+      kioskBase.position.set(7.5, 1.2, k);
+      const kioskScreen = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.65), screenMat);
+      kioskScreen.position.set(7.1, 1.9, k);
+      kioskScreen.rotation.y = -Math.PI / 3;
+      kioskScreen.rotation.x = -Math.PI / 7;
       tunnelGroup.add(kioskBase);
       tunnelGroup.add(kioskScreen);
     }
@@ -721,7 +732,8 @@
 
     let isMouseDrag = false;
     let prevMouse = { x: 0, y: 0 };
-    let camEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+    let camEuler = new THREE.Euler(0.18, 0, 0, 'YXZ'); // Góc nhìn hơi hướng lên nóc vòm ngắm cá bơi
+    camera.quaternion.setFromEuler(camEuler);
 
     window.addEventListener('mousedown', (e) => {
       if (e.target.closest('button') || e.target.closest('#kioskModal')) return;
