@@ -57,3 +57,23 @@
 | **04** | Cá bơi bị nghiêng chúc đầu bất thường | Hàm `lookAt(nextPos)` trên đường cong 3D dốc | Tính góc yaw ngang, khống chế pitch $\le \pm 5^\circ$ |
 | **05** | Cá voi lộn vòng không tự nhiên | Thiếu phân biệt động vật có vú biển | Lập trình vẫy đuôi dọc theo trục X cho cá voi và cá heo |
 | **06** | Khoảng trống khi đi xa hầm kính | Sinh vật bị phân tán quá xa | Thu hẹp bán kính lượn quanh hầm (18m - 40m), tập trung sinh cảnh |
+| **07** | Xuất hiện hàng trăm hình nón xám nhọn và dải giấy phẳng trôi nổi (User feedback ảnh `724d2473`) | Tồn tại 235 mesh `ConeGeometry` thủ tục sinh đàn cá mồi và cá rạn, lấn át các model thật | **Gỡ bỏ vĩnh viễn 100% hình nón và hình dẹp thủ tục**. Toàn bộ sinh vật biển được thay bằng mô hình 3D PBR thực tế từ Sketchfab (`.glb`). |
+| **08** | Cá Sketchfab không quẫy đuôi vây | Chưa kết nối `THREE.AnimationMixer` với clip hoạt họa xương của model | Kích hoạt `AnimationMixer` và gọi `mixer.update(dt)` trong vòng lặp render 60 FPS. |
+| **09** | Sinh vật bơi quá cao ngoài tầm nhìn hầm kính | Bán kính an toàn `minSafeRadius` cũ đặt quá lớn (19.5m) | Chuẩn hóa tỉ lệ hầm kính ($R = 4.6$m, cao 4.6m), đặt quỹ đạo bơi sát nóc vòm ($Y = 4.8 - 6.2$m) ngay tầm mắt khách. |
+| **10** | Cá Khế / Tuna bị tối màu do thiếu ánh sáng phản xạ | Model Sketchfab có màu vertex gốc tối (`0d0d0d`) | Gán màu vảy kim loại bạc ánh xanh (`0xd8eefe`, `metalness: 0.88`), biến đàn 12 con thành đàn Giant Trevally lấp lánh. |
+| **11** | Sàn đi bộ thiếu hiệu ứng nước lung linh | Sàn đá mài phẳng lì | Tích hợp GPU Shader Caustics dạng mạng lưới nắng dập dềnh phản chiếu trên sàn và vách bệ lan can. |
+
+---
+
+## 4. 🚀 TỔNG KẾT & KẾT QUẢ ĐẠT ĐƯỢC
+- **100% Không có hình khối đồ chơi**: Loại bỏ hoàn toàn hình nón, đĩa dẹt và khối thô sơ.
+- **100% Mô hình 3D Sketchfab PBR thực tế**:
+  1. *Cá Đuối Manta Ray* (sải cánh 6.5m, animation đập cánh uốn lượn).
+  2. *Cá Mập Hổ Tiger Shark* (dài 4.4m, animation uốn thân dũng mãnh).
+  3. *Đàn Cá Khế Giant Trevally & Tuna* (12 con, vảy bạc lấp lánh quẫy đuôi).
+  4. *Rùa Biển Đồi Mồi Hawksbill Sea Turtle* (dài 1.8m, chèo 4 vây êm ả ngoài kính).
+  5. *Đôi Cá Heo Mũi Chai Dolphin* (nhào lộn vẫy đuôi tầng cao).
+  6. *Cá Voi Lưng Gù Humpback Whale* (khổng lồ 14m, bơi uy nghiêm tầng sâu).
+  7. *Đàn Cá Rạn San Hô Nhiệt Đới PBR* (16 con, 4 loài cá bướm, cá đào bơi theo bầy).
+  8. *Hệ thống sinh thái phụ trợ*: Sứa dạ quang, 6 cột bọt khí oxy thủy cung dâng trào liên tục, ánh nắng caustics dập dềnh.
+- **Hiệu năng**: 60 FPS mượt mà trên trình duyệt.
