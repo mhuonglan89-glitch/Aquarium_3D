@@ -293,6 +293,22 @@
       new THREE.Vector3(-20, 26, 90)
     );
 
+    // Quỹ đạo Cá Khế Vây Xanh (Giant Trevally - Sketchfab Model) bơi tuần tra vảy ánh bạc
+    const trevallyCurve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(-18, 14, -70),
+      new THREE.Vector3(8, 17, -15),
+      new THREE.Vector3(-6, 13, 35),
+      new THREE.Vector3(22, 16, 85)
+    );
+
+    // Quỹ đạo Cá Voi Khổng Lồ (Whale) bơi tầng nước sâu bao la
+    const whaleCurve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(-80, 48, -120),
+      new THREE.Vector3(0, 55, -20),
+      new THREE.Vector3(60, 50, 60),
+      new THREE.Vector3(100, 44, 130)
+    );
+
     function registerEntity(mesh, curve, speed, scale, rotationOffset = 0) {
       mesh.scale.set(scale, scale, scale);
       scene.add(mesh);
@@ -343,6 +359,28 @@
       school.scale.set(0.8, 0.8, 0.8);
       school.position.set(22, 4, 15);
       scene.add(school);
+    });
+
+    // Nạp Cá Khế Vây Xanh / Giant Trevally (Chuẩn Sketchfab - Vảy ánh bạc kim loại)
+    gltfLoader.load('assets/models/tuna.glb', (gltf) => {
+      const trevally = gltf.scene;
+      trevally.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.metalness = 0.75;
+          child.material.roughness = 0.25;
+          child.castShadow = true;
+        }
+      });
+      registerEntity(trevally, trevallyCurve, 0.042, 3.2, 0);
+      // Tạo thêm cá bơi cùng bầy
+      const trevally2 = trevally.clone();
+      registerEntity(trevally2, trevallyCurve, 0.038, 2.8, 0);
+    });
+
+    // Nạp Cá Voi Khổng Lồ (Whale) bơi tầng nước sâu bao la
+    gltfLoader.load('assets/models/whale.glb', (gltf) => {
+      const whale = gltf.scene;
+      registerEntity(whale, whaleCurve, 0.016, 1.2, 0);
     });
 
     // Fallback High-Fidelity 3D Meshes (Đảm bảo luôn hiển thị 3D đẹp kể cả khi mở file://)
