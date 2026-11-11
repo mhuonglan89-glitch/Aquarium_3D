@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thủy Cung Nhiệt Đới 3D - 3D Realistic Oceanarium (20 Loài Sinh Vật Biển)</title>
+  <title>Mô Phỏng Thủy Cung 3D Tương Tác - Realistic 3D Tropical Oceanarium (20 Loài Sinh Vật Biển)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -37,7 +37,7 @@
   <!-- 3D WebGL Canvas -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Top-Left Museum HUD (Chuẩn Triển Lãm Cao Cấp) -->
+  <!-- Top-Left Museum HUD -->
   <div class="absolute top-4 left-4 pointer-events-none z-10">
     <div class="bg-slate-950/85 backdrop-blur-md border border-cyan-400/40 rounded-2xl p-4 shadow-2xl pointer-events-auto max-w-md">
       <div class="flex items-center justify-between mb-2">
@@ -48,14 +48,14 @@
         <span id="fpsVal" class="text-xs font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2.5 py-0.5 rounded-full">60 FPS</span>
       </div>
       <p id="modeDesc" class="text-xs text-cyan-50 leading-relaxed">
-        Đang ở <b>Hầm Kính Thủy Cung</b>. Ánh nắng rọi qua làn nước ngọc bích lung linh. Đàn <b>20 loài sinh vật biển</b> (Cá Đuối Manta, Cá Khế Giant Trevally, Rùa biển, Sứa phát quang, Rừng tảo bẹ, Cơn lốc cá trích...) bơi lội mềm mại ngoài vòm kính. Bấm <b>[SPACE]</b> để <b>lướt xuyên kính lặn tự do (100% không kính)</b>!
+        Đang ở <b>Hầm Kính Thủy Cung</b>. Làn nước ngọc bích lung linh với <b>rạn san hô tầng lớp rực rỡ</b>, <b>cột sủi bọt khí oxy lấp lánh</b> và đàn <b>20 loài sinh vật biển</b> (Cá Đuối Manta, Cá Mập, Rùa biển, Đàn cá khế, Sứa dạ quang...) bơi lội mềm mại tự nhiên. Bấm <b>[SPACE]</b> để <b>lướt xuyên kính lặn tự do 360°</b>!
       </p>
       
       <div class="mt-3 grid grid-cols-2 gap-2 text-[10px] font-mono text-cyan-100 bg-slate-900/80 p-2.5 rounded-xl border border-cyan-800/40">
         <div>Chế độ: <span id="modeText" class="text-cyan-300 font-bold">Hầm Kính Thủy Cung</span></div>
         <div>Vách ngăn: <span id="glassText" class="text-emerald-300 font-bold">Vòm Kính Acrylic</span></div>
         <div>Hệ sinh thái: <span class="text-amber-300 font-bold">20 Loài Đa Dạng</span></div>
-        <div>Vùng an toàn: <span class="text-emerald-400 font-bold">Không Xuyên Kính 100%</span></div>
+        <div>Vùng an toàn: <span class="text-emerald-400 font-bold">Khống Chế Xuyên Kính 100%</span></div>
       </div>
     </div>
   </div>
@@ -79,29 +79,29 @@
     </div>
     <div class="text-[11px] text-slate-200 leading-normal max-h-36 overflow-y-auto pr-1 space-y-1 custom-scrollbar">
       <div class="flex items-center gap-1.5"><span class="text-cyan-400">1.</span> <b>Cá Đuối Manta (Manta Ray):</b> Sải cánh 8.5m lướt trên vòm kính</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">2.</span> <b>Cá Khế Vây Xanh (Giant Trevally):</b> Vảy ánh bạc kim loại PBR</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">3.</span> <b>Cá Mập Hổ (Tiger Shark):</b> Tuần tra tầng nước giữa</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">4.</span> <b>Rùa Biển Đồi Mồi (Sea Turtle):</b> Bơi êm đềm cạnh rạn san hô</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">5.</span> <b>Cá Heo Mũi Chai (Dolphin):</b> Uốn lượn nhào lộn sinh động</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">6.</span> <b>Cá Voi Lưng Gù (Whale):</b> Khổng lồ bơi tầng nước sâu bao la</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">2.</span> <b>Cá Khế Giant Trevally:</b> Vảy ánh bạc kim loại PBR bơi theo đàn</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">3.</span> <b>Cá Mập Hổ (Tiger Shark):</b> Tuần tra tầng nước giữa rạn san hô</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">4.</span> <b>Rùa Biển Đồi Mồi (Sea Turtle):</b> Gặm san hô êm đềm ngang tầm mắt</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">5.</span> <b>Cá Heo Mũi Chai (Dolphin):</b> Cặp đôi nhào lộn sinh động</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">6.</span> <b>Cá Voi Lưng Gù (Whale):</b> Bơi ngang thư thái ở tầng cao đại dương</div>
       <div class="flex items-center gap-1.5"><span class="text-cyan-400">7.</span> <b>Cá Ngừ Vây Vàng (Yellowfin Tuna):</b> Tốc độ cao bơi thành đội hình</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">8.</span> <b>Cá Hề Cam Nemo (Clownfish):</b> Bơi ríu rít quanh hải quỳ</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">9.</span> <b>Cá Bắp Nẻ Xanh Dory (Blue Tang):</b> Xanh coban rực rỡ</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">10.</span> <b>Cá Bắp Nẻ Vàng (Yellow Tang):</b> Vàng chanh lướt rạn san hô</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">11.</span> <b>Sứa Biển Phát Quang (Bioluminescent Jellyfish):</b> Co bóp dạ quang</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">12.</span> <b>Cá Đuối Ó Đốm Hoa (Spotted Eagle Ray):</b> Đốm hoa tuyết sải cánh</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">13.</span> <b>Cá Mao Tiên Sư Tử (Lionfish):</b> Vây gai xòe ấn tượng</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">14.</span> <b>Đàn Cá Trích Xoáy (Bait Ball Tornado):</b> 150+ cá bơi lốc xoáy</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">15.</span> <b>Rừng Tảo Bẹ (Giant Kelp Forest):</b> 40+ rặng rong đung đưa theo sóng</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">16.</span> <b>Hải Quỳ Xúc Tu Mềm (Sea Anemone):</b> Phập phồng đáy biển</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">17.</span> <b>San Hô Não & Sừng Hươu (Corals):</b> Đủ màu tím, hồng, vàng, ngọc</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">8.</span> <b>Cá Hề Cam Nemo (Clownfish):</b> Bơi ríu rít quanh hải quỳ hồng</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">9.</span> <b>Cá Bắp Nẻ Xanh Dory (Blue Tang):</b> Xanh coban rực rỡ luồn lách</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">10.</span> <b>Cá Bắp Nẻ Vàng (Yellow Tang):</b> Vàng chanh lướt rạn san hô đĩa</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">11.</span> <b>Sứa Biển Phát Quang (Jellyfish):</b> Co bóp dạ quang xanh lơ</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">12.</span> <b>Cá Đuối Ó Đốm Hoa (Eagle Ray):</b> Đốm tuyết sải cánh lượn</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">13.</span> <b>Cá Mao Tiên Sư Tử (Lionfish):</b> Vây gai xòe ấn tượng gần hốc đá</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">14.</span> <b>Đàn Cá Trích Xoáy (Bait Ball):</b> 160+ cá bơi lốc xoáy lấp lánh</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">15.</span> <b>Rừng Tảo Bẹ (Giant Kelp):</b> Rặng rong chùm đu đưa theo sóng</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">16.</span> <b>Hải Quỳ Xúc Tu Mềm (Sea Anemone):</b> Phập phồng rực rỡ</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">17.</span> <b>San Hô Bàn & Sừng Hươu:</b> Đĩa tầng tím, hồng, vàng rực rỡ</div>
       <div class="flex items-center gap-1.5"><span class="text-cyan-400">18.</span> <b>Sao Biển Đỏ & Cam (Starfish):</b> Nằm tự nhiên trên thềm cát</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">19.</span> <b>Cua Biển San Hô (Crustaceans):</b> Ẩn mình bên hốc đá</div>
-      <div class="flex items-center gap-1.5"><span class="text-cyan-400">20.</span> <b>Bụi Vi Sinh Phù Du (Bioluminescent Plankton):</b> Phát sáng lơ lửng</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">19.</span> <b>Cột Sủi Bọt Khí Oxy (Aerator Bubbles):</b> 6 cột bọt khí dâng trào</div>
+      <div class="flex items-center gap-1.5"><span class="text-cyan-400">20.</span> <b>Vi Sinh Phù Du (Plankton):</b> Hạt bụi ngọc phát sáng lơ lửng</div>
     </div>
     <div class="text-[10px] text-cyan-200 border-t border-slate-800 pt-1.5 mt-2 flex justify-between font-mono">
-      <span>Độ sâu: 5 - 35m</span>
-      <span class="text-emerald-400 font-bold">Chuyển động uốn lượn 60 FPS</span>
+      <span>Độ sâu: 5 - 40m</span>
+      <span class="text-emerald-400 font-bold">Chuyển động sinh học mượt mà 60 FPS</span>
     </div>
   </div>
 
@@ -115,19 +115,19 @@
   </div>
 
   <script>
-    // ------------------------------------------------------------------------
+    // ========================================================================
     // 1. KHỞI TẠO THREE.JS WEBGL RENDERER & SCENE
-    // ------------------------------------------------------------------------
+    // ========================================================================
     const canvas = document.getElementById('webgl-canvas');
     const scene = new THREE.Scene();
 
-    // Nước biển nhiệt đới ngọc bích rực rỡ nắng (chuẩn ảnh mẫu quốc tế)
+    // Nước biển nhiệt đới ngọc bích rực rỡ chuẩn ảnh mẫu thủy cung quốc tế
     const oceanColor = new THREE.Color(0x068da9);
     scene.background = oceanColor;
-    scene.fog = new THREE.FogExp2(0x05677d, 0.0075);
+    scene.fog = new THREE.FogExp2(0x04748c, 0.0075);
 
     const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 1500);
-    camera.position.set(0, 3.2, 0); // Tầm mắt người đi bộ trong hầm
+    camera.position.set(0, 3.2, 0); // Tầm mắt chuẩn người đứng trong hầm kính
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -143,55 +143,35 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // ------------------------------------------------------------------------
-    // 2. HỆ THỐNG ÁNH SÁNG & LUỒNG TIA NẮNG MẶT TRỜI (VOLUMETRIC GOD RAYS)
-    // ------------------------------------------------------------------------
-    const ambientLight = new THREE.AmbientLight(0x38bdf8, 1.3);
+    // ========================================================================
+    // 2. HỆ THỐNG ÁNH SÁNG TỰ NHIÊN (HOÀN TOÀN KHÔNG DÙNG HÌNH NÓN TAM GIÁC THÔ CỨNG)
+    // ========================================================================
+    const ambientLight = new THREE.AmbientLight(0x38bdf8, 1.4);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    sunLight.position.set(30, 160, 40);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    sunLight.position.set(30, 160, 20);
     sunLight.castShadow = true;
     scene.add(sunLight);
 
-    const underwaterBlue = new THREE.PointLight(0x22d3ee, 2.0, 220);
-    underwaterBlue.position.set(0, 35, 0);
+    const underwaterBlue = new THREE.PointLight(0x22d3ee, 2.0, 260);
+    underwaterBlue.position.set(0, 25, 0);
     scene.add(underwaterBlue);
 
-    // Luồng tia nắng hình nón chiếu xiên (Sun God Rays)
-    const rayGroup = new THREE.Group();
-    const rayGeo = new THREE.ConeGeometry(38, 150, 16, 1, true);
-    const rayMat = new THREE.MeshBasicMaterial({
-      color: 0xbae6fd,
-      transparent: true,
-      opacity: 0.16,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-    for (let r = 0; r < 7; r++) {
-      const ray = new THREE.Mesh(rayGeo, rayMat);
-      ray.position.set(-70 + r * 24, 75, -110 + (r % 3) * 75);
-      ray.rotation.x = Math.PI;
-      ray.rotation.z = 0.16 * (r % 2 === 0 ? 1 : -1);
-      rayGroup.add(ray);
-    }
-    scene.add(rayGroup);
-
-    // ------------------------------------------------------------------------
-    // 3. ĐƯỜNG HẦM KÍNH ACRYLIC & HÀNH LANG (VÙNG BẢO VỆ CHỐNG XUYÊN KÍNH)
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 3. ĐƯỜNG HẦM KÍNH ACRYLIC & HÀNH LANG BẢO TÀNG CAO CẤP
+    // ========================================================================
     const TUNNEL_RADIUS = 15; // Bán kính vòm kính = 15m
     const TUNNEL_LENGTH = 220;
-    const SAFE_BUFFER = 4.5;  // Khoảng cách an toàn tuyệt đối -> Bán kính cấm = 19.5m
+    const SAFE_BUFFER = 4.5;  // Bán kính cấm tuyệt đối sinh vật = 19.5m
     const tunnelGroup = new THREE.Group();
 
     // Vòm kính Acrylic trong suốt, truyền sáng vật lý
-    const glassGeo = new THREE.CylinderGeometry(TUNNEL_RADIUS, TUNNEL_RADIUS, TUNNEL_LENGTH, 32, 1, true, Math.PI, Math.PI);
+    const glassGeo = new THREE.CylinderGeometry(TUNNEL_RADIUS, TUNNEL_RADIUS, TUNNEL_LENGTH, 36, 1, true, Math.PI, Math.PI);
     const glassMat = new THREE.MeshPhysicalMaterial({
       color: 0xe0f2fe,
-      transmission: 0.94,
-      opacity: 0.28,
+      transmission: 0.95,
+      opacity: 0.22,
       transparent: true,
       roughness: 0.05,
       ior: 1.49,
@@ -223,7 +203,7 @@
     floor.position.set(0, 0, 0);
     tunnelGroup.add(floor);
 
-    // Khung dầm chắn lan can 2 bên lối đi bộ (Walkway Parapets - Chuẩn ảnh mẫu quốc tế)
+    // Khung dầm chắn lan can 2 bên lối đi (Parapets)
     const barrierMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4, metalness: 0.6 });
     const barrierGeo = new THREE.BoxGeometry(0.9, 0.9, TUNNEL_LENGTH);
     const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
@@ -246,7 +226,7 @@
     rightLed.position.set(7.0, 0.12, 0);
     tunnelGroup.add(rightLed);
 
-    // Trụ Kiosk thông tin điện tử gắn nghiêng 45 độ trên thành bệ chắn
+    // Kiosk thông tin điện tử gắn trên thành bệ chắn
     const kioskMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
     const screenMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
     for (let k = -60; k <= 60; k += 40) {
@@ -261,9 +241,9 @@
     }
     scene.add(tunnelGroup);
 
-    // ------------------------------------------------------------------------
-    // 4. ĐÁY BIỂN CÁT & VƯỜN RẠN SAN HÔ PHONG PHÚ (SEABED & CORALS)
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 4. ĐÁY BIỂN CÁT & VÁCH RẠN SAN HÔ TẦNG LỚP RỰC RỠ (CORAL REEF TERRACE)
+    // ========================================================================
     const seabedGeo = new THREE.PlaneGeometry(600, 600, 32, 32);
     const seabedMat = new THREE.MeshStandardMaterial({ color: 0x0e7490, roughness: 0.85 });
     const seabed = new THREE.Mesh(seabedGeo, seabedMat);
@@ -271,76 +251,365 @@
     seabed.position.set(0, -9.5, 0);
     scene.add(seabed);
 
-    // 17. RẠN SAN HÔ NÃO & SAN HÔ SỪNG HƯƠU (Brain & Staghorn Corals)
-    const coralGroup = new THREE.Group();
-    const coralColors = [0xf43f5e, 0x06b6d4, 0xec4899, 0xfbbf24, 0xa855f7, 0x10b981, 0xf97316];
-    for (let c = 0; c < 45; c++) {
-      const side = c % 2 === 0 ? 1 : -1;
-      const cZ = -100 + (c / 45) * 200;
-      const cX = side * (TUNNEL_RADIUS + 5 + (c * 17) % 25);
-      const col = coralColors[c % coralColors.length];
-      const coralMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: 0.1 });
-      
-      // San hô khối não
-      const coralMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2 + (c % 4) * 0.8, 1), coralMat);
-      coralMesh.position.set(cX, -7.5 + (c % 3) * 0.6, cZ);
-      coralMesh.scale.set(1.2, 0.9, 1.2);
-      coralGroup.add(coralMesh);
+    // HỆ THỐNG RẠN SAN HÔ TẦNG LỚP NẰM NGAY TẦM MẮT (X = ±18m đến ±26m, Y = -4m đến +6m)
+    const reefGroup = new THREE.Group();
+    const reefColors = [
+      { main: 0x7c3aed, glow: 0x4c1d95 }, // Tím thủy chung
+      { main: 0xdb2777, glow: 0x831843 }, // Hồng fuchsia
+      { main: 0xe11d48, glow: 0x9f1239 }, // Đỏ san hô
+      { main: 0xf59e0b, glow: 0x78350f }, // Vàng hoàng gia
+      { main: 0x06b6d4, glow: 0x155e75 }, // Xanh ngọc bích
+      { main: 0x10b981, glow: 0x064e3b }  // Xanh lục bảo
+    ];
 
-      // Nhánh san hô cành vươn lên
-      for (let b = 0; b < 3; b++) {
-        const branch = new THREE.Mesh(new THREE.ConeGeometry(0.35, 3.2, 5), coralMat);
-        branch.position.set(cX + (b - 1) * 0.9, -6.0, cZ + (b % 2) * 0.8);
-        branch.rotation.z = (b - 1) * 0.25;
-        coralGroup.add(branch);
+    for (let side = -1; side <= 1; side += 2) {
+      for (let z = -80; z <= 80; z += 12) {
+        const moundX = side * (TUNNEL_RADIUS + 3.8 + Math.abs(Math.sin(z * 0.15)) * 3.0);
+        
+        // 1. Thềm đá san hô tầng bậc (Tiered Reef Terrace)
+        for (let tier = 0; tier < 3; tier++) {
+          const colInfo = reefColors[(Math.abs(z) + tier * 2) % reefColors.length];
+          const plateRadius = 2.0 + (2 - tier) * 0.8 + Math.random() * 0.8;
+          const plateGeo = new THREE.CylinderGeometry(plateRadius, plateRadius * 0.9, 0.28, 20);
+          const plateMat = new THREE.MeshStandardMaterial({
+            color: colInfo.main,
+            emissive: colInfo.glow,
+            emissiveIntensity: 0.35,
+            roughness: 0.45
+          });
+          const plate = new THREE.Mesh(plateGeo, plateMat);
+          const plateY = -4.5 + tier * 2.8 + (Math.random() - 0.5) * 0.6;
+          plate.position.set(moundX + (Math.random() - 0.5) * 1.5, plateY, z + (tier - 1) * 2.2);
+          plate.rotation.x = (Math.random() - 0.5) * 0.12;
+          plate.rotation.z = (Math.random() - 0.5) * 0.12;
+          reefGroup.add(plate);
+
+          // Vành mép san hô viền vàng chanh rực rỡ
+          const rimGeo = new THREE.TorusGeometry(plateRadius * 0.96, 0.08, 6, 20);
+          const rimMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+          const rim = new THREE.Mesh(rimGeo, rimMat);
+          rim.rotation.x = Math.PI / 2;
+          plate.add(rim);
+        }
+
+        // 2. Chùm san hô sừng hươu phát sáng (Branching Staghorn Coral)
+        for (let b = 0; b < 3; b++) {
+          const hornMat = new THREE.MeshStandardMaterial({
+            color: reefColors[(Math.abs(z) + b + 1) % reefColors.length].main,
+            roughness: 0.35
+          });
+          const horn = new THREE.Mesh(new THREE.ConeGeometry(0.25, 3.2, 6), hornMat);
+          horn.position.set(moundX + (b - 1.0) * 1.1, -1.0 + Math.random() * 1.5, z + (b % 2) * 1.2);
+          horn.rotation.z = (b - 1.0) * 0.32 + (side * 0.12);
+          horn.rotation.x = (Math.random() - 0.5) * 0.22;
+          reefGroup.add(horn);
+
+          const tip = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+          tip.position.set(0, 1.6, 0);
+          horn.add(tip);
+        }
       }
     }
-    scene.add(coralGroup);
+    scene.add(reefGroup);
 
-    // 15. RỪNG TẢO BẸ KHỔNG LỒ (Giant Kelp Forest - 40+ Rặng Rong Đung Đưa)
-    const kelpGroup = new THREE.Group();
-    const kelpMat = new THREE.MeshStandardMaterial({
-      color: 0x15803d,
-      roughness: 0.5,
-      side: THREE.DoubleSide
-    });
-    const kelpMeshes = [];
-    for (let k = 0; k < 42; k++) {
-      const side = k % 2 === 0 ? 1 : -1;
-      const kX = side * (TUNNEL_RADIUS + 7 + (k * 13) % 28);
-      const kZ = -100 + (k / 42) * 200;
-      const kH = 12 + (k % 5) * 2.2;
-      
-      const kGeo = new THREE.PlaneGeometry(1.2, kH, 1, 8);
-      const kelp = new THREE.Mesh(kGeo, kelpMat);
-      kelp.position.set(kX, -9.5 + kH / 2, kZ);
-      kelp.rotation.y = (k * 0.5) % Math.PI;
-      kelpGroup.add(kelp);
-      kelpMeshes.push({ mesh: kelp, baseY: kelp.position.y, height: kH, phase: k * 0.4 });
-    }
-    scene.add(kelpGroup);
-
-    // 16. HẢI QUỲ NHIỆT ĐỚI (Sea Anemones - Xúc Tu Mềm Phập Phồng)
+    // 16. HẢI QUỲ NHIỆT ĐỚI XÚC TU MỀM PHẬP PHỒNG (Sea Anemone Gardens)
     const anemoneGroup = new THREE.Group();
-    const anemoneMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.3, emissive: 0x831843, emissiveIntensity: 0.2 });
+    const anemoneMat = new THREE.MeshStandardMaterial({
+      color: 0xf472b6,
+      emissive: 0xbe185d,
+      emissiveIntensity: 0.4,
+      roughness: 0.3
+    });
+    const anemoneTentacles = [];
     for (let a = 0; a < 24; a++) {
-      const aX = (a % 2 === 0 ? 1 : -1) * (TUNNEL_RADIUS + 3.5 + (a % 6) * 3);
-      const aZ = -80 + (a / 24) * 160;
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.2, 1.5, 8), anemoneMat);
-      base.position.set(aX, -8.7, aZ);
+      const side = a % 2 === 0 ? 1 : -1;
+      const aX = side * (TUNNEL_RADIUS + 3.8 + (a % 4) * 1.8);
+      const aZ = -70 + (a / 24) * 140;
+      const aY = -3.5 + (a % 4) * 1.8;
+
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.3, 1.2, 8), anemoneMat);
+      base.position.set(aX, aY, aZ);
       anemoneGroup.add(base);
+
+      for (let t = 0; t < 8; t++) {
+        const tentacle = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.14, 1.8, 5), anemoneMat);
+        const ang = (t / 8) * Math.PI * 2;
+        tentacle.position.set(Math.cos(ang) * 0.6, 0.9, Math.sin(ang) * 0.6);
+        tentacle.rotation.z = Math.cos(ang) * 0.35;
+        tentacle.rotation.x = Math.sin(ang) * 0.35;
+        base.add(tentacle);
+        anemoneTentacles.push({ mesh: tentacle, baseRotZ: tentacle.rotation.z, phase: a + t * 0.5 });
+      }
     }
     scene.add(anemoneGroup);
 
-    // 18. SAO BIỂN ĐỎ & CAM (Starfish Trên Đáy Cát)
-    const starMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.7 });
-    for (let s = 0; s < 18; s++) {
-      const sX = (s % 2 === 0 ? 1 : -1) * (TUNNEL_RADIUS + 2.5 + (s * 7) % 20);
-      const sZ = -95 + (s / 18) * 190;
-      const star = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.35, 5), starMat);
-      star.rotation.x = Math.PI / 2;
-      star.position.set(sX, -9.3, sZ);
-      scene.add(star);
+    // 15. RỪNG TẢO BẸ & RONG BIỂN CHÙM ĐU ĐƯA (Giant Kelp & Ribbon Weed)
+    const kelpGroup = new THREE.Group();
+    const kelpMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.45, side: THREE.DoubleSide });
+    const kelpMeshes = [];
+    for (let k = 0; k < 40; k++) {
+      const side = k % 2 === 0 ? 1 : -1;
+      const kX = side * (TUNNEL_RADIUS + 5.5 + (k * 11) % 20);
+      const kZ = -80 + (k / 40) * 160;
+      const kH = 14 + (k % 5) * 2.2;
+
+      const kGeo = new THREE.PlaneGeometry(1.4, kH, 1, 8);
+      const kelp = new THREE.Mesh(kGeo, kelpMat);
+      kelp.position.set(kX, -9.5 + kH / 2, kZ);
+      kelp.rotation.y = (k * 0.7) % Math.PI;
+      kelpGroup.add(kelp);
+      kelpMeshes.push({ mesh: kelp, phase: k * 0.35 });
+    }
+    scene.add(kelpGroup);
+
+    // ========================================================================
+    // 5. CỘT SỦI BỌT KHÍ OXY THỦY CUNG (AERATOR BUBBLE COLUMNS - CHUẨN ẢNH MẪU SỐ 3)
+    // ========================================================================
+    const aeratorColumns = [
+      { x: -18.0, z: -18 },
+      { x: 18.0, z: -14 },
+      { x: -20.0, z: -48 },
+      { x: 20.0, z: -42 },
+      { x: -19.5, z: 22 },
+      { x: 19.5, z: 28 }
+    ];
+
+    const bubbleMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.92,
+      opacity: 0.85,
+      transparent: true,
+      roughness: 0.05,
+      metalness: 0.1,
+      ior: 1.1
+    });
+
+    const bubbleGroup = new THREE.Group();
+    const allBubbles = [];
+
+    aeratorColumns.forEach(cp => {
+      const nozzle = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.0, 1.3, 0.5, 16),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.3 })
+      );
+      nozzle.position.set(cp.x, -9.2, cp.z);
+      bubbleGroup.add(nozzle);
+
+      // Cột phát sáng mờ mềm mại
+      const glowBeam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.8, 2.2, 48, 16, 1, true),
+        new THREE.MeshBasicMaterial({
+          color: 0x38bdf8,
+          transparent: true,
+          opacity: 0.045,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+      glowBeam.position.set(cp.x, 14.5, cp.z);
+      bubbleGroup.add(glowBeam);
+
+      const bubbleCount = 65;
+      for (let b = 0; b < bubbleCount; b++) {
+        const radius = 0.12 + Math.random() * 0.38;
+        const bMesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 8, 8), bubbleMat);
+        const y = -9.0 + (b / bubbleCount) * 48.0;
+        const radOffset = Math.random() * 0.85;
+        const ang = Math.random() * Math.PI * 2;
+        bMesh.position.set(cp.x + Math.cos(ang) * radOffset, y, cp.z + Math.sin(ang) * radOffset);
+        bubbleGroup.add(bMesh);
+
+        allBubbles.push({
+          mesh: bMesh,
+          baseX: cp.x,
+          baseZ: cp.z,
+          speed: 6.5 + Math.random() * 5.0,
+          wobbleSpeed: 8.0 + Math.random() * 5.0,
+          wobbleAmp: 0.2 + Math.random() * 0.22,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+    });
+    scene.add(bubbleGroup);
+
+    // ========================================================================
+    // 6. QUỸ ĐẠO BÉZIER / SPLINE KHÉP KÍN VÀ CƠ CHẾ CHỐNG XUYÊN KÍNH TUYỆT ĐỐI
+    // ========================================================================
+    const animatedEntities = [];
+
+    // 1. Cá Đuối Manta khổng lồ lướt trên nóc vòm (Y = 22 - 27m)
+    const mantaCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-14, 24, -35),
+      new THREE.Vector3(0, 26, -18),
+      new THREE.Vector3(15, 23, 10),
+      new THREE.Vector3(6, 25, 38),
+      new THREE.Vector3(-12, 26, 15),
+      new THREE.Vector3(-18, 24, -10)
+    ], true);
+
+    // 2. Cá Mập Hổ tuần tra tầng nước giữa rạn san hô bên trái
+    const sharkCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-22, 6, -38),
+      new THREE.Vector3(-19, 5, -16),
+      new THREE.Vector3(-23, 8, 15),
+      new THREE.Vector3(-28, 7, 35),
+      new THREE.Vector3(-30, 8, 0),
+      new THREE.Vector3(-24, 7, -22)
+    ], true);
+
+    // 3. Rùa Biển Đồi Mồi gặm san hô êm đềm bên phải ngang tầm mắt (X ≈ 18 - 22m, Y ≈ 2 - 5m)
+    const turtleCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(19, 3.2, -32),
+      new THREE.Vector3(21, 4.0, -14),
+      new THREE.Vector3(18, 2.5, 12),
+      new THREE.Vector3(22, 3.8, 35),
+      new THREE.Vector3(24, 4.5, 8),
+      new THREE.Vector3(20, 3.0, -16)
+    ], true);
+
+    // 4. Cá Khế Vây Xanh Giant Trevally bơi theo đàn trên vòm kính
+    const trevallyCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-14, 18, -35),
+      new THREE.Vector3(2, 21, -15),
+      new THREE.Vector3(15, 19, 15),
+      new THREE.Vector3(18, 16, 40),
+      new THREE.Vector3(4, 20, 18),
+      new THREE.Vector3(-10, 19, -12)
+    ], true);
+
+    // 5. Cá Heo Mũi Chai bơi lượn nhào lộn
+    const dolphinCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(16, 18, -32),
+      new THREE.Vector3(4, 22, -10),
+      new THREE.Vector3(-14, 19, 20),
+      new THREE.Vector3(-8, 23, 42),
+      new THREE.Vector3(12, 20, 15)
+    ], true);
+
+    // 6. Cá Voi Lưng Gù bơi ngang thư thái ở tầng cao đại dương (Y = 28 - 32m)
+    const whaleCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-45, 29, -55),
+      new THREE.Vector3(-10, 31, -22),
+      new THREE.Vector3(38, 30, 25),
+      new THREE.Vector3(55, 28, 55),
+      new THREE.Vector3(15, 31, 20),
+      new THREE.Vector3(-28, 30, -25)
+    ], true);
+
+    // 7. Cá Đuối Ó Đốm Hoa
+    const eagleRayCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-18, 20, -30),
+      new THREE.Vector3(-4, 23, 0),
+      new THREE.Vector3(16, 21, 30),
+      new THREE.Vector3(0, 24, 45),
+      new THREE.Vector3(-15, 21, 8)
+    ], true);
+
+    function registerEntity(mesh, curve, speed, targetSize, yawOffset = 0, type = 'fish', initialT = 0) {
+      const box = new THREE.Box3().setFromObject(mesh);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0.001) {
+        const scale = targetSize / maxDim;
+        mesh.scale.set(scale, scale, scale);
+      }
+
+      mesh.traverse((c) => {
+        if (c.isMesh) {
+          c.castShadow = true;
+          c.receiveShadow = true;
+        }
+      });
+
+      scene.add(mesh);
+      animatedEntities.push({
+        mesh: mesh,
+        curve: curve,
+        speed: speed,
+        t: initialT,
+        yawOffset: yawOffset,
+        targetSize: targetSize,
+        type: type,
+        wagSpeed: 8 + Math.random() * 4,
+        wagAmp: 0.12,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    const gltfLoader = new THREE.GLTFLoader();
+
+    // 1. CÁ ĐUỐI MANTA (Sải cánh 8.5m lướt trên nóc vòm)
+    gltfLoader.load('assets/models/manta_ray.glb', (gltf) => {
+      registerEntity(gltf.scene, mantaCurve, 0.028, 8.5, Math.PI, 'manta', 0.22);
+    });
+
+    // 2. CÁ MẬP HỔ (TIGER SHARK)
+    gltfLoader.load('assets/models/shark.glb', (gltf) => {
+      registerEntity(gltf.scene, sharkCurve, 0.038, 5.0, 0, 'shark', 0.24);
+    });
+
+    // 3. RÙA BIỂN ĐỒI MỒI (SEA TURTLE)
+    gltfLoader.load('assets/models/turtle.glb', (gltf) => {
+      registerEntity(gltf.scene, turtleCurve, 0.022, 2.2, Math.PI, 'turtle', 0.25);
+    });
+
+    // 4. CÁ KHẾ VÂY XANH GIANT TREVALLY (Vảy ánh bạc kim loại PBR - 5 con bơi thành đàn)
+    gltfLoader.load('assets/models/tuna.glb', (gltf) => {
+      const baseTrevally = gltf.scene;
+      baseTrevally.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.metalness = 0.85;
+          child.material.roughness = 0.18;
+        }
+      });
+      for (let i = 0; i < 5; i++) {
+        const fish = (i === 0) ? baseTrevally : baseTrevally.clone();
+        registerEntity(fish, trevallyCurve, 0.036 + i * 0.002, 1.6 - (i % 2) * 0.2, 0, 'trevally', (0.2 + i * 0.06) % 1.0);
+      }
+    });
+
+    // 5. CÁ HEO MŨI CHAI (Cặp đôi cá heo nhào lộn)
+    gltfLoader.load('assets/models/dolphin.glb', (gltf) => {
+      registerEntity(gltf.scene, dolphinCurve, 0.042, 2.7, 0, 'dolphin', 0.20);
+      const d2 = gltf.scene.clone();
+      registerEntity(d2, dolphinCurve, 0.042, 2.4, 0, 'dolphin', 0.26);
+    });
+
+    // 6. CÁ VOI LƯNG GÙ (Bơi ngang thư thái ở tầng cao đại dương)
+    gltfLoader.load('assets/models/whale.glb', (gltf) => {
+      registerEntity(gltf.scene, whaleCurve, 0.012, 17.5, 0, 'whale', 0.20);
+    });
+
+    // 12. CÁ ĐUỐI Ó ĐỐM HOA (Spotted Eagle Ray)
+    gltfLoader.load('assets/models/manta_ray.glb', (gltf) => {
+      const eagleRay = gltf.scene.clone();
+      eagleRay.traverse(c => {
+        if (c.isMesh && c.material) {
+          c.material = c.material.clone();
+          c.material.color = new THREE.Color(0x0284c7);
+        }
+      });
+      registerEntity(eagleRay, eagleRayCurve, 0.032, 5.2, Math.PI, 'manta', 0.15);
+    });
+
+    // 13. CÁ MAO TIÊN SƯ TỬ (LIONFISH)
+    for (let l = 0; l < 2; l++) {
+      const lionGroup = new THREE.Group();
+      const lionBody = new THREE.Mesh(
+        new THREE.ConeGeometry(0.5, 1.6, 8),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 })
+      );
+      lionBody.rotation.x = Math.PI / 2;
+      lionGroup.add(lionBody);
+      for (let s = 0; s < 5; s++) {
+        const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.01, 1.8, 4), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        spine.position.set((s - 2) * 0.3, 0.6, 0);
+        spine.rotation.z = (s - 2) * 0.3;
+        lionGroup.add(spine);
+      }
+      lionGroup.position.set(l === 0 ? 19.5 : -19.5, -2.5, -16 + l * 25);
+      scene.add(lionGroup);
     }
 
     // 11. SỨA BIỂN PHÁT QUANG DẠ QUANG (16 Glowing Bioluminescent Jellyfish)
@@ -359,14 +628,11 @@
 
     for (let j = 0; j < 16; j++) {
       const jRoot = new THREE.Group();
-      // Chuông dù sứa
       const bell = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), jellyMat);
       jRoot.add(bell);
-      // Lõi nội quan phát sáng
       const core = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), jellyCoreMat);
       core.position.set(0, 0.2, 0);
       jRoot.add(core);
-      // Xúc tu sứa
       for (let t = 0; t < 6; t++) {
         const tentacle = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 3.2, 4), jellyMat);
         tentacle.position.set(Math.cos(t * Math.PI / 3) * 0.8, -1.6, Math.sin(t * Math.PI / 3) * 0.8);
@@ -374,26 +640,22 @@
       }
       
       const side = j % 2 === 0 ? 1 : -1;
-      const jX = side * (TUNNEL_RADIUS + 6 + (j % 4) * 6);
+      const jX = side * (TUNNEL_RADIUS + 4.5 + (j % 4) * 3.5);
       const jY = 4 + (j % 5) * 3.5;
-      const jZ = -90 + (j / 16) * 180;
+      const jZ = -60 + (j / 16) * 120;
       jRoot.position.set(jX, jY, jZ);
       jellyGroup.add(jRoot);
       jellyList.push({ root: jRoot, baseY: jY, phase: j * 0.6, speed: 2.5 + (j % 3) * 0.5 });
     }
     scene.add(jellyGroup);
 
-    // 14. ĐÀN CÁ TRÍCH XOÁY LỐC XOÁY (Fish Tornado / Bait Ball - 150+ Cá Bơi Xoắn Ốc)
-    const baitBallCount = 150;
+    // 14. ĐÀN CÁ TRÍCH XOÁY LỐC XOÁY (Fish Tornado / Bait Ball - 160+ Cá bơi xoắn ốc)
+    const baitBallCount = 160;
     const baitBallGroup = new THREE.Group();
     const baitFishGeo = new THREE.ConeGeometry(0.18, 0.9, 5);
     baitFishGeo.rotateX(Math.PI / 2);
-    const baitFishMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      metalness: 0.9,
-      roughness: 0.2
-    });
-    const baitCenter = new THREE.Vector3(-34, 12, -20); // Đặt an toàn cách xa hầm
+    const baitFishMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.2 });
+    const baitCenter = new THREE.Vector3(-22, 8, -20);
     const baitFishList = [];
 
     for (let b = 0; b < baitBallCount; b++) {
@@ -401,47 +663,43 @@
       baitBallGroup.add(fish);
       baitFishList.push({
         mesh: fish,
-        radius: 6.5 + (b % 10) * 0.8,
-        heightOffset: -7 + (b / baitBallCount) * 14,
+        radius: 5.5 + (b % 10) * 0.75,
+        heightOffset: -6 + (b / baitBallCount) * 12,
         angle: (b / baitBallCount) * Math.PI * 6,
-        speed: 1.2 + Math.random() * 0.5
+        speed: 1.3 + Math.random() * 0.5
       });
     }
     scene.add(baitBallGroup);
 
-    // 8, 9, 10. ĐÀN CÁ NHỎ RỰC RỠ SAN HÔ (Clownfish, Blue Tang, Yellow Tang - 60 Con)
-    const reefFishCount = 60;
+    // 8, 9, 10. ĐÀN CÁ NHỎ SAN HÔ (Nemo, Blue Tang, Yellow Tang - 75 Con)
+    const reefFishCount = 75;
     const reefFishGroup = new THREE.Group();
     const reefFishList = [];
 
     for (let f = 0; f < reefFishCount; f++) {
-      const type = f % 3; // 0: Clownfish, 1: Blue Tang, 2: Yellow Tang
-      let col = 0xf97316; // Cam Nemo
-      if (type === 1) col = 0x2563eb; // Xanh Dory
-      if (type === 2) col = 0xfacc15; // Vàng Tang
+      const type = f % 3; // 0: Nemo, 1: Dory, 2: Yellow Tang
+      let col = 0xf97316;
+      if (type === 1) col = 0x2563eb;
+      if (type === 2) col = 0xfacc15;
 
       const fishMesh = new THREE.Group();
       const body = new THREE.Mesh(
-        new THREE.ConeGeometry(0.32, 1.2, 6),
+        new THREE.ConeGeometry(0.3, 1.1, 6),
         new THREE.MeshStandardMaterial({ color: col, roughness: 0.3, metalness: 0.4 })
       );
       body.rotation.x = Math.PI / 2;
       fishMesh.add(body);
 
-      // Sọc trắng cho cá hề Nemo
       if (type === 0) {
-        const stripe = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.33, 0.33, 0.2, 8),
-          new THREE.MeshBasicMaterial({ color: 0xffffff })
-        );
+        const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.31, 0.18, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
         stripe.rotation.x = Math.PI / 2;
         fishMesh.add(stripe);
       }
 
       const side = f % 2 === 0 ? 1 : -1;
-      const fX = side * (TUNNEL_RADIUS + 4 + (f % 8) * 2.5);
-      const fY = 0.5 + (f % 6) * 1.8;
-      const fZ = -85 + (f / reefFishCount) * 170;
+      const fX = side * (TUNNEL_RADIUS + 3.8 + (f % 6) * 1.6);
+      const fY = 0.5 + (f % 5) * 1.6;
+      const fZ = -60 + (f / reefFishCount) * 120;
       fishMesh.position.set(fX, fY, fZ);
       reefFishGroup.add(fishMesh);
 
@@ -456,269 +714,28 @@
     }
     scene.add(reefFishGroup);
 
-    // 20. VI SINH VẬT PHÙ DU & BỌT KHÍ DẠ QUANG (180 Hạt)
-    const planktonCount = 180;
-    const planktonGeo = new THREE.SphereGeometry(0.18, 6, 6);
+    // 20. VI SINH VẬT PHÙ DU DẠ QUANG (Bioluminescent Plankton - 200 Hạt)
+    const planktonCount = 200;
+    const planktonGeo = new THREE.SphereGeometry(0.16, 6, 6);
     const planktonMat = new THREE.MeshPhysicalMaterial({
       color: 0xe0f2fe,
       transmission: 0.9,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.5,
       roughness: 0.1
     });
     const planktonGroup = new THREE.Group();
     for (let p = 0; p < planktonCount; p++) {
       const dot = new THREE.Mesh(planktonGeo, planktonMat);
-      dot.position.set(-70 + Math.random() * 140, -8 + Math.random() * 45, -100 + Math.random() * 200);
+      dot.position.set(-50 + Math.random() * 100, -8 + Math.random() * 45, -80 + Math.random() * 160);
       dot.userData = { speed: 3.5 + Math.random() * 5 };
       planktonGroup.add(dot);
     }
     scene.add(planktonGroup);
 
-    // ------------------------------------------------------------------------
-    // 5. CÁC SINH VẬT BIỂN LỚN (SKETCHFAB 3D GLTF) & QUỸ ĐẠO BÉZIER / SPLINE VÒNG KHÉP KÍN
-    // ------------------------------------------------------------------------
-    // QUY CHUẨN: Dùng đường cong khép kín (closed: true) -> Không bao giờ bị đi lùi hay giật ngược!
-    // VÙNG AN TOÀN: Mọi điểm điều khiển đều thỏa mãn r >= 22m hoặc Y >= 25m -> Không bao giờ xuyên vòm kính!
-    const animatedEntities = [];
-
-    // 1. Quỹ đạo Cá Đuối Manta khổng lồ bay lượn trên nóc vòm (Y = 26 - 32m, r >= 26m)
-    const mantaCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-22, 28, -75),
-      new THREE.Vector3(0, 31, -25),
-      new THREE.Vector3(24, 27, 30),
-      new THREE.Vector3(12, 29, 85),
-      new THREE.Vector3(-18, 30, 40),
-      new THREE.Vector3(-28, 27, -20)
-    ], true);
-
-    // 2. Quỹ đạo Cá Mập Hổ tuần tra tầng nước giữa bên mạn trái (X <= -25m, Y = 10 - 18m)
-    const sharkCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-42, 14, -80),
-      new THREE.Vector3(-28, 11, -20),
-      new THREE.Vector3(-36, 16, 45),
-      new THREE.Vector3(-48, 12, 85),
-      new THREE.Vector3(-55, 15, 10),
-      new THREE.Vector3(-45, 13, -40)
-    ], true);
-
-    // 3. Quỹ đạo Rùa Biển bơi êm đềm bên mạn phải dọc rạn san hô (X >= 24m, Y = 5 - 14m)
-    const turtleCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(26, 7, -65),
-      new THREE.Vector3(34, 11, -15),
-      new THREE.Vector3(28, 6, 35),
-      new THREE.Vector3(32, 9, 80),
-      new THREE.Vector3(38, 12, 20),
-      new THREE.Vector3(30, 8, -30)
-    ], true);
-
-    // 4. Quỹ đạo Cá Khế Vây Xanh / Giant Trevally (Tuần tra vảy ánh bạc)
-    const trevallyCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-26, 17, -70),
-      new THREE.Vector3(-6, 26, -10),
-      new THREE.Vector3(18, 25, 45),
-      new THREE.Vector3(30, 18, 85),
-      new THREE.Vector3(10, 26, 35),
-      new THREE.Vector3(-18, 24, -25)
-    ], true);
-
-    // 5. Quỹ đạo Cá Heo Mũi Chai bơi lượn uốn khúc
-    const dolphinCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(30, 22, -60),
-      new THREE.Vector3(10, 27, 0),
-      new THREE.Vector3(-26, 23, 50),
-      new THREE.Vector3(-15, 28, 90),
-      new THREE.Vector3(20, 24, 40)
-    ], true);
-
-    // 6. Quỹ đạo Cá Voi Khổng Lồ bơi trên tầng cao ngoài khơi xa
-    const whaleCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-75, 48, -120),
-      new THREE.Vector3(0, 54, -30),
-      new THREE.Vector3(70, 50, 60),
-      new THREE.Vector3(95, 46, 130),
-      new THREE.Vector3(20, 52, 50),
-      new THREE.Vector3(-60, 49, -40)
-    ], true);
-
-    // 7. Quỹ đạo Đội hình Cá Ngừ Đại Dương Vây Vàng
-    const tunaCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(28, 16, -70),
-      new THREE.Vector3(40, 19, -10),
-      new THREE.Vector3(32, 15, 50),
-      new THREE.Vector3(42, 17, 85),
-      new THREE.Vector3(35, 18, 10)
-    ], true);
-
-    // 12. Quỹ đạo Cá Đuối Ó Đốm Hoa
-    const eagleRayCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-30, 22, -50),
-      new THREE.Vector3(-10, 27, 10),
-      new THREE.Vector3(22, 23, 60),
-      new THREE.Vector3(0, 28, 80),
-      new THREE.Vector3(-24, 25, 20)
-    ], true);
-
-    // Hàm chuẩn hóa kích thước và đăng ký thực thể di động
-    function registerEntity(mesh, curve, speed, targetSize, yawOffset = 0, type = 'fish') {
-      // 1. Tự động tính toán kích thước bounding box và chuẩn hóa theo mét thực tế
-      const box = new THREE.Box3().setFromObject(mesh);
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      if (maxDim > 0.001) {
-        const scale = targetSize / maxDim;
-        mesh.scale.set(scale, scale, scale);
-      }
-
-      // Kích hoạt bóng đổ
-      mesh.traverse((c) => {
-        if (c.isMesh) {
-          c.castShadow = true;
-          c.receiveShadow = true;
-        }
-      });
-
-      scene.add(mesh);
-      animatedEntities.push({
-        mesh: mesh,
-        curve: curve,
-        speed: speed,
-        t: Math.random(),
-        yawOffset: yawOffset,
-        targetSize: targetSize,
-        type: type,
-        wagSpeed: 8 + Math.random() * 4,
-        wagAmp: 0.12,
-        phase: Math.random() * Math.PI * 2
-      });
-    }
-
-    const gltfLoader = new THREE.GLTFLoader();
-
-    // 1. NẠP CÁ ĐUỐI MANTA (GIANT MANTA RAY)
-    gltfLoader.load('assets/models/manta_ray.glb', (gltf) => {
-      // Kích thước chuẩn: Sải cánh 8.5m (không bị che hết màn hình)
-      registerEntity(gltf.scene, mantaCurve, 0.03, 8.5, Math.PI, 'manta');
-    }, undefined, () => {
-      // Fallback cao cấp chuẩn sinh học (không dùng hình khối trẻ em)
-      createProceduralManta();
-    });
-
-    // 2. NẠP CÁ MẬP HỔ (TIGER SHARK)
-    gltfLoader.load('assets/models/shark.glb', (gltf) => {
-      registerEntity(gltf.scene, sharkCurve, 0.04, 4.8, 0, 'shark');
-    }, undefined, () => {
-      createProceduralShark();
-    });
-
-    // 3. NẠP RÙA BIỂN ĐỒI MỒI (SEA TURTLE)
-    gltfLoader.load('assets/models/turtle.glb', (gltf) => {
-      registerEntity(gltf.scene, turtleCurve, 0.022, 2.0, Math.PI, 'turtle');
-    }, undefined, () => {
-      createProceduralTurtle();
-    });
-
-    // 4. NẠP CÁ KHẾ VÂY XANH (GIANT TREVALLY - VẢY ÁNH BẠC KIM LOẠI PBR)
-    gltfLoader.load('assets/models/tuna.glb', (gltf) => {
-      const trevally = gltf.scene;
-      trevally.traverse((child) => {
-        if (child.isMesh && child.material) {
-          child.material.metalness = 0.85;
-          child.material.roughness = 0.18;
-        }
-      });
-      registerEntity(trevally, trevallyCurve, 0.038, 1.6, 0, 'trevally');
-      
-      const trevally2 = trevally.clone();
-      registerEntity(trevally2, trevallyCurve, 0.035, 1.4, 0, 'trevally');
-    });
-
-    // 5. NẠP CÁ HEO MŨI CHAI (DOLPHIN)
-    gltfLoader.load('assets/models/dolphin.glb', (gltf) => {
-      registerEntity(gltf.scene, dolphinCurve, 0.045, 2.6, 0, 'dolphin');
-    });
-
-    // 6. NẠP CÁ VOI KHỔNG LỒ (HUMPBACK WHALE - TẦNG BIỂN SÂU)
-    gltfLoader.load('assets/models/whale.glb', (gltf) => {
-      registerEntity(gltf.scene, whaleCurve, 0.014, 18.0, 0, 'whale');
-    });
-
-    // 7. CÁ NGỪ VÂY VÀNG (YELLOWFIN TUNA)
-    gltfLoader.load('assets/models/tuna.glb', (gltf) => {
-      const tuna = gltf.scene.clone();
-      registerEntity(tuna, tunaCurve, 0.05, 1.8, 0, 'tuna');
-    });
-
-    // 12. CÁ ĐUỐI Ó ĐỐM HOA (SPOTTED EAGLE RAY)
-    gltfLoader.load('assets/models/manta_ray.glb', (gltf) => {
-      const eagleRay = gltf.scene.clone();
-      eagleRay.traverse(c => {
-        if (c.isMesh && c.material) {
-          c.material = c.material.clone();
-          c.material.color = new THREE.Color(0x0284c7);
-        }
-      });
-      registerEntity(eagleRay, eagleRayCurve, 0.032, 5.5, Math.PI, 'manta');
-    });
-
-    // 13. CÁ MAO TIÊN SƯ TỬ (LIONFISH - 2 Con Bơi Gần Hốc Đá)
-    for (let l = 0; l < 2; l++) {
-      const lionGroup = new THREE.Group();
-      const lionBody = new THREE.Mesh(
-        new THREE.ConeGeometry(0.5, 1.6, 8),
-        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 })
-      );
-      lionBody.rotation.x = Math.PI / 2;
-      lionGroup.add(lionBody);
-      // Vây xòe gai
-      for (let s = 0; s < 5; s++) {
-        const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.01, 1.8, 4), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        spine.position.set((s - 2) * 0.3, 0.6, 0);
-        spine.rotation.z = (s - 2) * 0.3;
-        lionGroup.add(spine);
-      }
-      lionGroup.position.set(l === 0 ? 25 : -25, -4, -30 + l * 40);
-      scene.add(lionGroup);
-    }
-
-    // Fallbacks cao cấp với cấu trúc giải phẫu sinh học (vây, thân thuôn, đuôi)
-    function createProceduralManta() {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(
-        new THREE.ConeGeometry(4.0, 6.0, 4),
-        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.5 })
-      );
-      body.rotation.x = Math.PI / 2;
-      body.scale.set(1.8, 1.0, 0.18);
-      g.add(body);
-      registerEntity(g, mantaCurve, 0.03, 8.5, 0, 'manta');
-    }
-
-    function createProceduralShark() {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(
-        new THREE.ConeGeometry(0.9, 4.5, 8),
-        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
-      );
-      body.rotation.x = Math.PI / 2;
-      g.add(body);
-      registerEntity(g, sharkCurve, 0.04, 4.8, 0, 'shark');
-    }
-
-    function createProceduralTurtle() {
-      const g = new THREE.Group();
-      const shell = new THREE.Mesh(
-        new THREE.SphereGeometry(1.2, 16, 12),
-        new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 })
-      );
-      shell.scale.set(1.0, 0.45, 1.3);
-      g.add(shell);
-      registerEntity(g, turtleCurve, 0.022, 2.0, 0, 'turtle');
-    }
-
-    // ------------------------------------------------------------------------
-    // 6. ĐIỀU KHIỂN & CHUYỂN CẢNH DUAL-MODE (TUNNEL WALK <-> OPEN DIVE)
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 7. ĐIỀU KHIỂN & CHUYỂN CẢNH DUAL-MODE (HẦM KÍNH <-> LẶN TỰ DO)
+    // ========================================================================
     let isDiving = false;
     const keys = {};
     window.addEventListener('keydown', (e) => {
@@ -732,7 +749,8 @@
 
     let isMouseDrag = false;
     let prevMouse = { x: 0, y: 0 };
-    let camEuler = new THREE.Euler(0.18, 0, 0, 'YXZ'); // Góc nhìn hơi hướng lên nóc vòm ngắm cá bơi
+    // Góc nhìn ban đầu ngước nhẹ lên 12 độ để chiêm ngưỡng trọn vẹn vòm kính và cá bơi
+    let camEuler = new THREE.Euler(0.20, 0, 0, 'YXZ');
     camera.quaternion.setFromEuler(camEuler);
 
     window.addEventListener('mousedown', (e) => {
@@ -766,7 +784,7 @@
       if (isDiving) {
         // CHẾ ĐỘ 2: LƯỚT XUYÊN KÍNH HÒA MÌNH VÀO ĐẠI DƯƠNG (100% NO GLASS)
         gsap.to(camera.position, {
-          x: 28, y: 14, z: camera.position.z,
+          x: 20, y: 8, z: camera.position.z,
           duration: 2.2,
           ease: "power3.inOut"
         });
@@ -775,9 +793,8 @@
           duration: 1.5,
           onComplete: () => { tunnelGroup.visible = false; }
         });
-        modeDesc.innerHTML = "Đang <b>Hòa Mình 100% Vào Lòng Biển Mở</b>! Toàn bộ hầm kính đã biến mất, ánh nắng rực rỡ, bạn đang tự do bơi lội 360° sát bên 20 loài sinh vật biển mà hoàn toàn không còn kính chắn!";
+        modeDesc.innerHTML = "Đang <b>Hòa Mình 100% Vào Lòng Biển Mở</b>! Toàn bộ hầm kính đã ẩn đi, bạn đang tự do bơi lội 360° sát bên rạn san hô, cột sủi bọt khí và 20 loài sinh vật biển!";
         modeText.innerText = "Lặn Biển Tự Do (Free Dive)";
-        modeText.className = "text-cyan-300 font-bold";
         glassText.innerText = "100% Không Kính (Open Sea)";
         glassText.className = "text-emerald-300 font-bold";
         btnIcon.innerText = "🚶";
@@ -792,9 +809,8 @@
           duration: 2.2,
           ease: "power3.inOut"
         });
-        modeDesc.innerHTML = "Đang ở <b>Hầm Kính Thủy Cung</b>. Ánh nắng rọi qua làn nước ngọc bích lung linh. Đàn <b>20 loài sinh vật biển</b> bơi lội mềm mại ngoài vòm kính. Bấm <b>[SPACE]</b> để <b>lướt xuyên kính lặn tự do</b>!";
+        modeDesc.innerHTML = "Đang ở <b>Hầm Kính Thủy Cung</b>. Làn nước ngọc bích lung linh với <b>rạn san hô tầng lớp rực rỡ</b>, <b>cột sủi bọt khí oxy lấp lánh</b> và đàn <b>20 loài sinh vật biển</b> bơi lội mềm mại tự nhiên. Bấm <b>[SPACE]</b> để <b>lướt xuyên kính lặn tự do 360°</b>!";
         modeText.innerText = "Hầm Kính Thủy Cung";
-        modeText.className = "text-cyan-300 font-bold";
         glassText.innerText = "Vòm Kính Acrylic";
         glassText.className = "text-emerald-300 font-bold";
         btnIcon.innerText = "🌊";
@@ -804,9 +820,9 @@
     }
     toggleDiveBtn.onclick = toggleDiveMode;
 
-    // ------------------------------------------------------------------------
-    // 7. VÒNG LẶP RENDER 60 FPS & THUẬT TOÁN ĐIỀU HƯỚNG / CHỐNG XUYÊN KÍNH
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 8. VÒNG LẶP RENDER 60 FPS & CƠ CHẾ ĐIỀU HƯỚNG THỦY ĐỘNG HỌC MƯỢT MÀ
+    // ========================================================================
     let lastTime = performance.now();
     let frameCount = 0, fpsTimer = 0;
 
@@ -816,7 +832,6 @@
       const dt = Math.min(0.05, (currentTime - lastTime) / 1000);
       lastTime = currentTime;
 
-      // Tính toán FPS thực tế
       frameCount++;
       fpsTimer += dt;
       if (fpsTimer >= 0.5) {
@@ -824,35 +839,42 @@
         frameCount = 0; fpsTimer = 0;
       }
 
-      // Điều khiển Camera bằng phím WASD
+      // Điều khiển Camera bằng WASD
       const moveSpeed = 18 * dt;
       const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
 
       if (!isDiving) {
-        // Trong hầm kính: Khóa chặt độ cao mắt y = 3.2m, chỉ di chuyển dọc trục Z
         if (keys['w'] || keys['arrowup']) camera.position.z -= moveSpeed;
         if (keys['s'] || keys['arrowdown']) camera.position.z += moveSpeed;
         camera.position.z = Math.max(-85, Math.min(85, camera.position.z));
       } else {
-        // Lặn biển tự do 6 hướng
         if (keys['w'] || keys['arrowup']) camera.position.addScaledVector(forward, moveSpeed);
         if (keys['s'] || keys['arrowdown']) camera.position.addScaledVector(forward, -moveSpeed);
         if (keys['a'] || keys['arrowleft']) camera.position.addScaledVector(right, -moveSpeed);
         if (keys['d'] || keys['arrowright']) camera.position.addScaledVector(right, moveSpeed);
       }
 
-      // 1. CẬP NHẬT CHUYỂN ĐỘNG CÁC SINH VẬT BIỂN LỚN (SKETCHFAB MODELS)
+      // 1. CẬP NHẬT CỘT SỦI BỌT KHÍ OXY (AERATOR BUBBLE COLUMNS)
+      allBubbles.forEach(b => {
+        b.mesh.position.y += b.speed * dt;
+        if (b.mesh.position.y > 38.0) {
+          b.mesh.position.y = -9.0 + Math.random() * 1.5;
+        }
+        const time = currentTime * 0.001 * b.wobbleSpeed + b.phase;
+        b.mesh.position.x = b.baseX + Math.sin(time) * b.wobbleAmp;
+        b.mesh.position.z = b.baseZ + Math.cos(time) * b.wobbleAmp;
+      });
+
+      // 2. CẬP NHẬT CHUYỂN ĐỘNG THỦY ĐỘNG HỌC CÁC SINH VẬT BIỂN (ỔN ĐỊNH GÓC BƠI NGANG)
       animatedEntities.forEach(ent => {
         ent.t += ent.speed * dt * 0.15;
         if (ent.t >= 1) ent.t -= 1;
 
-        // Điểm hiện tại và điểm kế tiếp trên đường cong khép kín
         const pos = ent.curve.getPoint(ent.t);
-        const nextPos = ent.curve.getPoint((ent.t + 0.005) % 1);
+        const nextPos = ent.curve.getPoint((ent.t + 0.004) % 1);
 
-        // THUẬT TOÁN BẢO VỆ CHỐNG XUYÊN VÒM KÍNH (STRICT TUNNEL AVOIDANCE)
-        // Hầm kính hình trụ: x^2 + y^2 <= R^2 với y >= 0 và z trong khoảng [-115, 115]
+        // Chống xuyên hầm kính tuyệt đối
         const distFromCenter = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
         const minSafeRadius = TUNNEL_RADIUS + SAFE_BUFFER; // 19.5m
         if (pos.y > -1 && pos.z > -115 && pos.z < 115 && distFromCenter < minSafeRadius) {
@@ -863,92 +885,110 @@
 
         ent.mesh.position.copy(pos);
 
-        // ĐIỀU HƯỚNG TỚI: Quay đầu chính xác về điểm tiếp theo (HOÀN TOÀN KHÔNG BỊ ĐI LÙI)
-        ent.mesh.lookAt(nextPos);
-        if (ent.yawOffset !== 0) {
-          ent.mesh.rotateY(ent.yawOffset);
+        // TÍNH TOÁN HƯỚNG BƠI NGANG THỦY ĐỘNG HỌC (TRIỆT TIÊU ĐỘ CHÚC / NGỬA BẤT THƯỜNG)
+        const dx = nextPos.x - pos.x;
+        const dy = nextPos.y - pos.y;
+        const dz = nextPos.z - pos.z;
+        const horizontalDist = Math.max(0.001, Math.sqrt(dx * dx + dz * dz));
+
+        // Góc Yaw trên mặt phẳng ngang
+        const baseYaw = Math.atan2(dx, dz) + Math.PI + ent.yawOffset;
+
+        // Khống chế nghiêm ngặt góc Pitch (chúc/ngửa đầu)
+        let pitch = Math.atan2(dy, horizontalDist);
+        const maxPitch = (ent.type === 'whale') ? 0.05 : ((ent.type === 'manta') ? 0.10 : 0.15);
+        pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
+
+        // Độ nghiêng khi cua lượn (Banking roll)
+        let roll = 0;
+        if (ent.type === 'manta' || ent.type === 'dolphin') {
+          roll = Math.sin(currentTime * 0.002 + ent.phase) * 0.12;
         }
 
-        // CỬ ĐỘNG UỐN LƯỢN TỰ NHIÊN SINH HỌC (BIOLOGICAL UNDULATION):
-        if (ent.type === 'manta') {
-          // Cá đuối: uốn lượn sải cánh và nghiêng lượn (bank roll)
-          const roll = Math.sin(currentTime * 0.002 + ent.phase) * 0.12;
-          const pitch = Math.sin(currentTime * 0.003 + ent.phase) * 0.05;
-          ent.mesh.rotateZ(roll);
-          ent.mesh.rotateX(pitch);
+        ent.mesh.rotation.set(pitch, baseYaw, roll, 'YXZ');
+
+        // CHUYỂN ĐỘNG UỐN LƯỢN CHUẨN SINH HỌC TỰ NHIÊN:
+        if (ent.type === 'whale') {
+          // Cá voi: vẫy đuôi dọc theo phương đứng (giải phẫu động vật biển có vú)
+          const fluke = Math.sin(currentTime * 0.0015 * ent.wagSpeed + ent.phase) * 0.035;
+          ent.mesh.rotateX(fluke);
+        } else if (ent.type === 'dolphin') {
+          // Cá heo: vẫy đuôi đứng sinh động
+          const fluke = Math.sin(currentTime * 0.0035 * ent.wagSpeed + ent.phase) * 0.08;
+          ent.mesh.rotateX(fluke);
+        } else if (ent.type === 'manta') {
+          // Cá đuối: uốn lượn sải cánh mềm mại
+          const wing = Math.sin(currentTime * 0.0028 + ent.phase) * 0.15;
+          ent.mesh.rotateZ(wing);
+          ent.mesh.rotateX(Math.cos(currentTime * 0.0028 + ent.phase) * 0.04);
         } else if (ent.type === 'turtle') {
-          // Rùa biển: nhịp nhàng chèo vây
-          const stroke = Math.sin(currentTime * 0.003 + ent.phase) * 0.08;
+          // Rùa biển: nhịp chèo vây êm ả
+          const stroke = Math.sin(currentTime * 0.0025 + ent.phase) * 0.06;
           ent.mesh.rotateY(stroke);
         } else {
-          // Cá mập, cá khế, cá heo, cá ngừ: vẫy đuôi uốn thân sóng hình sin
-          const tailWag = Math.sin(currentTime * 0.006 * ent.wagSpeed + ent.phase) * ent.wagAmp;
+          // Các loài cá xương và cá mập: vẫy đuôi ngang hình sin S-wave
+          const tailWag = Math.sin(currentTime * 0.0055 * ent.wagSpeed + ent.phase) * ent.wagAmp;
           ent.mesh.rotateY(tailWag);
         }
       });
 
-      // 2. CẬP NHẬT SỨA PHÁT QUANG (Co bóp chuông dù và dạt nổi)
+      // 3. CẬP NHẬT SỨA PHÁT QUANG (Co bóp chuông dù)
       jellyList.forEach(j => {
         const time = currentTime * 0.001 * j.speed + j.phase;
         const pulse = Math.sin(time);
-        // Co bóp dù sứa
-        j.root.scale.y = 1.0 + pulse * 0.25;
-        j.root.scale.x = 1.0 - pulse * 0.15;
-        j.root.scale.z = 1.0 - pulse * 0.15;
-        // Nổi lên và chìm xuống nhịp nhàng
-        j.root.position.y = j.baseY + Math.sin(time * 0.8) * 1.8;
+        j.root.scale.y = 1.0 + pulse * 0.22;
+        j.root.scale.x = 1.0 - pulse * 0.12;
+        j.root.scale.z = 1.0 - pulse * 0.12;
+        j.root.position.y = j.baseY + Math.sin(time * 0.8) * 1.6;
       });
 
-      // 3. CẬP NHẬT CƠN LỐC CÁ TRÍCH (Bait Ball Vortex Tornado)
+      // 4. CẬP NHẬT CƠN LỐC CÁ TRÍCH (Bait Ball Vortex)
       baitFishList.forEach(b => {
         b.angle += dt * b.speed * 0.8;
         const x = baitCenter.x + Math.cos(b.angle) * b.radius;
         const z = baitCenter.z + Math.sin(b.angle) * b.radius;
-        const y = baitCenter.y + b.heightOffset + Math.sin(b.angle * 2) * 1.5;
-        
+        const y = baitCenter.y + b.heightOffset + Math.sin(b.angle * 2) * 1.2;
         b.mesh.position.set(x, y, z);
-        // Hướng bơi tiếp tuyến xoay tròn
         const nextX = baitCenter.x + Math.cos(b.angle + 0.05) * b.radius;
         const nextZ = baitCenter.z + Math.sin(b.angle + 0.05) * b.radius;
         b.mesh.lookAt(nextX, y, nextZ);
       });
 
-      // 4. CẬP NHẬT RỪNG TẢO BẸ ĐUNG ĐƯA THEO DÒNG NƯỚC (Giant Kelp Swaying)
+      // 5. CẬP NHẬT RỪNG TẢO BẸ ĐUNG ĐƯA
       kelpMeshes.forEach(k => {
-        const sway = Math.sin(currentTime * 0.0018 + k.phase) * 0.18;
-        k.mesh.rotation.z = sway;
+        k.mesh.rotation.z = Math.sin(currentTime * 0.0016 + k.phase) * 0.16;
       });
 
-      // 5. CẬP NHẬT ĐÀN CÁ NHỎ SAN HÔ (Nemo, Blue Tang, Yellow Tang)
+      // 6. CẬP NHẬT XÚC TU HẢI QUỲ PHẬP PHỒNG
+      anemoneTentacles.forEach(t => {
+        t.mesh.rotation.z = t.baseRotZ + Math.sin(currentTime * 0.002 + t.phase) * 0.15;
+      });
+
+      // 7. CẬP NHẬT ĐÀN CÁ NHỎ SAN HÔ (Nemo, Blue Tang, Yellow Tang)
       reefFishList.forEach(f => {
         const time = currentTime * 0.002 * f.speed + f.phase;
-        f.mesh.position.x = f.baseX + Math.sin(time) * 3.5;
-        f.mesh.position.y = f.baseY + Math.cos(time * 1.5) * 1.2;
-        f.mesh.position.z = f.baseZ + Math.cos(time) * 4.5;
-        
-        // Hướng bơi
-        const dirX = Math.cos(time) * 3.5;
-        const dirZ = -Math.sin(time) * 4.5;
+        f.mesh.position.x = f.baseX + Math.sin(time) * 3.0;
+        f.mesh.position.y = f.baseY + Math.cos(time * 1.5) * 1.0;
+        f.mesh.position.z = f.baseZ + Math.cos(time) * 3.8;
+        const dirX = Math.cos(time) * 3.0;
+        const dirZ = -Math.sin(time) * 3.8;
         f.mesh.rotation.y = Math.atan2(dirX, dirZ);
       });
 
-      // 6. CẬP NHẬT BỌT KHÍ & VI SINH VẬT PHÙ DU NỔI LÊN
+      // 8. CẬP NHẬT VI SINH VẬT PHÙ DU NỔI LÊN
       planktonGroup.children.forEach(dot => {
         dot.position.y += dot.userData.speed * dt;
         if (dot.position.y > 40) {
           dot.position.y = -8;
-          dot.position.x = -70 + Math.random() * 140;
-          dot.position.z = -100 + Math.random() * 200;
+          dot.position.x = -50 + Math.random() * 100;
+          dot.position.z = -80 + Math.random() * 160;
         }
       });
-
-      // 7. TIA NẮNG MẶT TRỜI QUÉT NHẸ DƯỚI ĐÁY NƯỚC
-      rayGroup.rotation.y = Math.sin(currentTime * 0.0003) * 0.08;
 
       renderer.render(scene, camera);
     }
 
-    animate(performance.now());
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
