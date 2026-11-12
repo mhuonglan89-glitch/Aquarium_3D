@@ -52,14 +52,14 @@
         <span id="fpsVal" class="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2 py-0.2 rounded-full">60 FPS</span>
       </div>
       <p id="modeDesc" class="text-[10px] text-cyan-50 leading-relaxed mb-2">
-        <b>Hầm Kính Thủy Cung:</b> 100% mô hình 3D thực tế từ Sketchfab chuyển động xương mềm mại, ánh nắng caustics dập dềnh và cột sủi bọt oxy. Bấm <b>[SPACE]</b> để lướt xuyên kính lặn tự do 360°!
+        <b>Hầm Kính Thủy Cung:</b> 100% mô hình 3D thực tế từ Sketchfab, bơi tiến tự nhiên, uốn lượn lên/xuống (Pitch), nghiêng mình vào cua (Banking Roll) và cử động xương sinh học. Bấm <b>[SPACE]</b> để lặn tự do 360°!
       </p>
       
       <div class="grid grid-cols-2 gap-1 text-[9px] font-mono text-cyan-100 bg-slate-900/80 p-1.5 rounded-xl border border-cyan-800/40">
         <div>Chế độ: <span id="modeText" class="text-cyan-300 font-bold">Hầm Kính</span></div>
         <div>Vách: <span id="glassText" class="text-emerald-300 font-bold">Vòm Acrylic</span></div>
         <div>Model: <span class="text-amber-300 font-bold">100% Sketchfab PBR</span></div>
-        <div>Cử động: <span class="text-emerald-400 font-bold">Bones Anim</span></div>
+        <div>Động học: <span class="text-emerald-400 font-bold">Pitch / Roll 3D</span></div>
       </div>
     </div>
   </div>
@@ -79,16 +79,16 @@
         <span class="text-sm">🦈</span>
         <h3 class="text-[11px] font-mono font-bold text-cyan-300 uppercase">Hệ Thống Sinh Vật 3D Sketchfab</h3>
       </div>
-      <span class="text-[9px] bg-cyan-950 border border-cyan-600 text-cyan-300 px-1.5 py-0.2 rounded-full font-mono">100% Thực</span>
+      <span class="text-[9px] bg-cyan-950 border border-cyan-600 text-cyan-300 px-1.5 py-0.2 rounded-full font-mono">100% Bơi Tiến 3D</span>
     </div>
     <div class="text-[10px] text-slate-200 leading-tight max-h-24 overflow-y-auto pr-1 space-y-1 custom-scrollbar">
-      <div><b>1. Cá Đuối Manta 3D:</b> Sải cánh 6.5m lướt trên vòm kính</div>
-      <div><b>2. Cá Mập Hổ 3D:</b> Bơi uốn mình dũng mãnh ngang vòm kính</div>
-      <div><b>3. Đàn Cá Khế & Ngừ 3D (12 con):</b> Vảy bạc lấp lánh</div>
-      <div><b>4. Rùa Biển Đồi Mồi 3D:</b> Chèo 4 vây êm ả ngoài kính</div>
-      <div><b>5. Đôi Cá Heo 3D:</b> Nhào lộn vẫy đuôi tầng cao</div>
-      <div><b>6. Cá Voi Lưng Gù 3D:</b> Khổng lồ 14m tầng sâu</div>
-      <div><b>7. Đàn Cá Rạn San Hô PBR (16 con):</b> 4 loài nhiệt đới</div>
+      <div><b>1. Cá Đuối Manta 3D:</b> Sải cánh 6.5m, đập cánh uốn lượn lên xuống</div>
+      <div><b>2. Cá Mập Hổ 3D:</b> Dũng mãnh bơi tiến, uốn lượn ngang vòm</div>
+      <div><b>3. Đàn Cá Khế & Ngừ 3D (12 con):</b> Vảy bạc lấp lánh quẫy đuôi</div>
+      <div><b>4. Rùa Biển Đồi Mồi 3D:</b> Chèo 4 vây bơi tiến êm ả ngoài kính</div>
+      <div><b>5. Đôi Cá Heo 3D:</b> Bơi tiến nhào lộn vẫy đuôi tầng cao</div>
+      <div><b>6. Cá Voi Lưng Gù 3D:</b> Khổng lồ 14m bơi tiến tầng sâu</div>
+      <div><b>7. Đàn Cá Rạn San Hô PBR (16 con):</b> 4 loài nhiệt đới bơi theo bầy</div>
       <div><b>8. Cột Sủi Bọt Oxy & Nắng Caustics:</b> Loang loáng sàn đá</div>
     </div>
   </div>
@@ -382,77 +382,103 @@
     scene.add(bubbleGroup);
 
     // ========================================================================
-    // 6. CÁC SINH VẬT 100% MÔ HÌNH 3D SKETCHFAB & ANIMATION MIXERS
+    // 6. CÁC SINH VẬT 100% MÔ HÌNH 3D SKETCHFAB & CHUYỂN ĐỘNG 3D TIẾN TỚI CHUẨN
     // ========================================================================
     const animatedEntities = [];
     const animationMixers = [];
 
-    // Quỹ đạo bơi lội mềm mại, lướt sát và vắt ngang nóc hầm kính ngay tầm nhìn
-    // 1. Manta Ray: Sải cánh 6.5m lướt trên nóc vòm kính
+    // Quỹ đạo 3D khép kín mượt mà có cao độ uốn lượn lên/xuống (Pitch) chân thực
+    // 1. Manta Ray: Sải cánh 6.5m bay lượn uốn lượn từ cao xuống thấp trên vòm kính
     const mantaCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-1.0, 5.8, -12),
-      new THREE.Vector3(1.2, 5.6, -18),
-      new THREE.Vector3(2.6, 5.4, -10),
-      new THREE.Vector3(0.5, 5.8, -4),
-      new THREE.Vector3(-2.2, 5.5, -6)
+      new THREE.Vector3(1.5, 6.4, -20),
+      new THREE.Vector3(3.2, 5.2, -12),
+      new THREE.Vector3(0.5, 5.6, -2),
+      new THREE.Vector3(-2.6, 6.2, -6)
     ], true);
 
-    // 2. Tiger Shark: Dũng mãnh bơi ngang vòm kính từ trái sang phải ngay trước mắt
+    // 2. Tiger Shark: Dũng mãnh bơi tiến, lượn lặn từ cao xuống ngang tầm mắt
     const sharkCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(0.0, 4.8, -10),
-      new THREE.Vector3(2.6, 4.5, -16),
-      new THREE.Vector3(4.2, 3.2, -24),
-      new THREE.Vector3(1.2, 5.0, -20),
-      new THREE.Vector3(-3.2, 4.8, -14),
-      new THREE.Vector3(-1.8, 5.1, -6)
+      new THREE.Vector3(2.8, 5.5, -18),
+      new THREE.Vector3(4.5, 3.2, -26),
+      new THREE.Vector3(1.2, 5.4, -20),
+      new THREE.Vector3(-3.2, 4.6, -14),
+      new THREE.Vector3(-1.8, 5.2, -5)
     ], true);
 
     // 3. Sea Turtle: Bơi chèo 4 vây êm ả sát cửa sổ kính bên phải
     const turtleCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(4.8, 2.2, -8),
-      new THREE.Vector3(5.2, 2.6, -16),
-      new THREE.Vector3(5.0, 1.8, -24),
-      new THREE.Vector3(5.4, 2.4, -14)
+      new THREE.Vector3(4.8, 2.2, -6),
+      new THREE.Vector3(5.2, 3.0, -15),
+      new THREE.Vector3(4.9, 1.8, -25),
+      new THREE.Vector3(5.5, 2.7, -15)
     ], true);
 
     // 4. Trevally / Tuna: Đàn 12 con vảy bạc bơi xoay vòng lấp lánh trên vòm kính
     const trevallyCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(2.0, 4.8, -8),
-      new THREE.Vector3(2.8, 5.2, -14),
-      new THREE.Vector3(1.8, 5.6, -18),
-      new THREE.Vector3(0.8, 5.2, -14),
-      new THREE.Vector3(1.2, 4.7, -9)
+      new THREE.Vector3(2.8, 5.6, -15),
+      new THREE.Vector3(1.6, 5.9, -20),
+      new THREE.Vector3(0.6, 5.1, -14),
+      new THREE.Vector3(1.2, 4.6, -8)
     ], true);
 
     // 5. Dolphins: Đôi cá heo lượn nhào trên tầng cao vòm hầm
     const dolphinCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-2.2, 6.8, -10),
-      new THREE.Vector3(-0.8, 7.2, -18),
-      new THREE.Vector3(1.2, 6.6, -24),
-      new THREE.Vector3(-1.5, 7.0, -14)
+      new THREE.Vector3(-0.8, 7.8, -19),
+      new THREE.Vector3(1.5, 6.5, -26),
+      new THREE.Vector3(-1.5, 7.4, -14)
     ], true);
 
     // 6. Whale: Cá voi khổng lồ 14m bơi hùng tráng tầng nước sâu phía trên
     const whaleCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-12, 13.5, -16),
-      new THREE.Vector3(-2, 14.0, -10),
-      new THREE.Vector3(8, 13.5, -4),
+      new THREE.Vector3(-2, 15.0, -10),
+      new THREE.Vector3(8, 14.0, -4),
       new THREE.Vector3(14, 13.0, 8),
-      new THREE.Vector3(0, 14.0, 0)
+      new THREE.Vector3(0, 14.5, 0)
     ], true);
 
     const gltfLoader = new THREE.GLTFLoader();
 
-    function registerEntity(mesh, curve, speed, targetSize, yawOffset = 0, type = 'fish', initialT = 0, animations = null) {
-      const box = new THREE.Box3().setFromObject(mesh);
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      if (maxDim > 0.001) {
-        const scale = targetSize / maxDim;
-        mesh.scale.set(scale, scale, scale);
+    // HÀM ĐĂNG KÝ VẬT THỂ: CHUẨN HÓA GỐC TỌA ĐỘ VÀ ĐẢM BẢO ĐẦU LUÔN HƯỚNG THEO TRỤC -Z (FORWARD NATIVE)
+    function registerEntity(rawScene, curve, speed, targetSize, rotCorrection = [0, 0, 0], type = 'fish', initialT = 0, animations = null) {
+      // 1. Tạo container di chuyển
+      const container = new THREE.Group();
+
+      // 2. Đưa vào rotator để xoay đầu về đúng hướng -Z (Three.js lookAt forward)
+      const rotator = new THREE.Group();
+      rotator.add(rawScene);
+      rotator.rotation.set(rotCorrection[0], rotCorrection[1], rotCorrection[2]);
+
+      if (type === 'shark') {
+        // Căn chỉnh riêng biệt cho khung xương đặc biệt của cá mập Tiger Shark PBR
+        rotator.scale.setScalar(targetSize / 14.99);
+        rotator.position.x = -5.8685 * (targetSize / 2.5);
+        rotator.position.y = 0.55;
+      } else {
+        // Chuẩn hóa tỷ lệ kích thước thực tế cho 6 loài còn lại
+        rotator.updateMatrixWorld(true);
+        const box1 = new THREE.Box3().setFromObject(rotator);
+        const sz1 = box1.getSize(new THREE.Vector3());
+        const maxDim = Math.max(sz1.x, sz1.y, sz1.z);
+        if (maxDim > 0.001) {
+          rotator.scale.setScalar(targetSize / maxDim);
+        }
+
+        // Căn chuẩn tâm đối xứng tại gốc (0, 0, 0)
+        rotator.updateMatrixWorld(true);
+        const box2 = new THREE.Box3().setFromObject(rotator);
+        const center2 = box2.getCenter(new THREE.Vector3());
+        rotator.position.sub(center2);
       }
 
-      mesh.traverse((c) => {
+      container.add(rotator);
+
+      // Shadow
+      rawScene.traverse((c) => {
         if (c.isMesh) {
           c.castShadow = true;
           c.receiveShadow = true;
@@ -461,7 +487,7 @@
 
       // Kích hoạt Skeletal Animation từ Sketchfab
       if (animations && animations.length > 0) {
-        const mixer = new THREE.AnimationMixer(mesh);
+        const mixer = new THREE.AnimationMixer(rawScene);
         const clip = animations.find(a => a.name.toLowerCase().includes('swim')) || animations[0];
         if (clip) {
           const action = mixer.clipAction(clip);
@@ -470,13 +496,14 @@
         }
       }
 
-      scene.add(mesh);
+      scene.add(container);
       animatedEntities.push({
-        mesh: mesh,
+        container: container,
+        rotator: rotator,
+        baseRotY: rotCorrection[1],
         curve: curve,
         speed: speed,
         t: initialT,
-        yawOffset: yawOffset,
         targetSize: targetSize,
         type: type,
         wagSpeed: 8 + Math.random() * 4,
@@ -485,34 +512,34 @@
       });
     }
 
-    // 1. CÁ ĐUỐI MANTA 3D SKETCHFAB (manta_ray.glb)
+    // 1. CÁ ĐUỐI MANTA 3D SKETCHFAB (manta_ray.glb) -> Đầu hướng -Z khi rotY = Math.PI (180°)
     gltfLoader.load('assets/models/manta_ray.glb', (gltf) => {
-      registerEntity(gltf.scene, mantaCurve, 0.032, 6.5, Math.PI, 'manta', 0.50, gltf.animations);
+      registerEntity(gltf.scene, mantaCurve, 0.032, 6.5, [0, Math.PI, 0], 'manta', 0.50, gltf.animations);
     });
 
-    // 2. CÁ MẬP HỔ 3D SKETCHFAB (shark.glb)
+    // 2. CÁ MẬP HỔ 3D SKETCHFAB (shark.glb) -> Đầu hướng -Z khi rotY = -Math.PI / 2 (-90°)
     gltfLoader.load('assets/models/shark.glb', (gltf) => {
-      registerEntity(gltf.scene, sharkCurve, 0.035, 4.4, 0, 'shark', 0.05, gltf.animations);
+      registerEntity(gltf.scene, sharkCurve, 0.035, 4.4, [0, -Math.PI / 2, 0], 'shark', 0.05, gltf.animations);
     });
 
-    // 3. RÙA BIỂN ĐỒI MỒI 3D SKETCHFAB (turtle.glb)
+    // 3. RÙA BIỂN ĐỒI MỒI 3D SKETCHFAB (turtle.glb) -> Đầu hướng -Z khi rotY = 0 (0°)
     gltfLoader.load('assets/models/turtle.glb', (gltf) => {
-      registerEntity(gltf.scene, turtleCurve, 0.024, 1.8, Math.PI, 'turtle', 0.02, gltf.animations);
+      registerEntity(gltf.scene, turtleCurve, 0.024, 1.8, [0, 0, 0], 'turtle', 0.02, gltf.animations);
     });
 
-    // 4. CÁ HEO MŨI CHAI 3D SKETCHFAB (dolphin.glb)
+    // 4. CÁ HEO MŨI CHAI 3D SKETCHFAB (dolphin.glb) -> Đầu hướng -Z khi rotY = Math.PI (180°)
     gltfLoader.load('assets/models/dolphin.glb', (gltf) => {
-      registerEntity(gltf.scene, dolphinCurve, 0.040, 2.4, 0, 'dolphin', 0.10, gltf.animations);
+      registerEntity(gltf.scene, dolphinCurve, 0.040, 2.4, [0, Math.PI, 0], 'dolphin', 0.10, gltf.animations);
       const d2 = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(gltf.scene) : gltf.scene.clone();
-      registerEntity(d2, dolphinCurve, 0.040, 2.1, 0, 'dolphin', 0.22, gltf.animations);
+      registerEntity(d2, dolphinCurve, 0.040, 2.1, [0, Math.PI, 0], 'dolphin', 0.22, gltf.animations);
     });
 
-    // 5. CÁ VOI LƯNG GÙ 3D SKETCHFAB (whale.glb)
+    // 5. CÁ VOI LƯNG GÙ 3D SKETCHFAB (whale.glb) -> Đầu hướng -Z khi rotY = Math.PI (180°)
     gltfLoader.load('assets/models/whale.glb', (gltf) => {
-      registerEntity(gltf.scene, whaleCurve, 0.015, 14.0, 0, 'whale', 0.05, gltf.animations);
+      registerEntity(gltf.scene, whaleCurve, 0.015, 14.0, [0, Math.PI, 0], 'whale', 0.05, gltf.animations);
     });
 
-    // 6. ĐÀN CÁ KHẾ & CÁ NGỪ 3D SKETCHFAB (tuna.glb - 12 CON QUẪY ĐUÔI VẢY BẠC)
+    // 6. ĐÀN CÁ KHẾ & CÁ NGỪ 3D SKETCHFAB (tuna.glb - 12 CON VẢY BẠC ÁNH XANH) -> Đầu hướng -Z khi rotY = Math.PI (180°)
     gltfLoader.load('assets/models/tuna.glb', (gltf) => {
       const baseTuna = gltf.scene;
       baseTuna.traverse((c) => {
@@ -527,47 +554,33 @@
       for (let i = 0; i < 12; i++) {
         const fishInstance = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(baseTuna) : baseTuna.clone();
         const tOffset = (0.05 + i * 0.075) % 1.0;
-        registerEntity(fishInstance, trevallyCurve, 0.035 + (i % 3) * 0.003, 1.15 - (i % 2) * 0.15, 0, 'trevally', tOffset, gltf.animations);
+        registerEntity(fishInstance, trevallyCurve, 0.035 + (i % 3) * 0.003, 1.15 - (i % 2) * 0.15, [0, Math.PI, 0], 'trevally', tOffset, gltf.animations);
       }
     });
 
-    // 7. 4 LOÀI CÁ RẠN SAN HÔ 3D SKETCHFAB (tropical_fish.glb - 16 CON BƠI THEO BẦY)
+    // 7. 4 LOÀI CÁ RẠN SAN HÔ 3D SKETCHFAB (tropical_fish.glb - 16 CON BƠI THEO BẦY) -> Đầu hướng -Z khi rotY = Math.PI / 2 (90°)
     gltfLoader.load('assets/models/tropical_fish.glb', (gltf) => {
-      const extractedFish = [];
-      gltf.scene.traverse(c => {
-        if (c.isMesh) {
-          c.geometry.computeBoundingBox();
-          c.geometry.center();
-          c.castShadow = true;
-          c.receiveShadow = true;
-          extractedFish.push(c);
-        }
-      });
+      // Quỹ đạo bơi cho đàn cá rạn san hô 2 bên hầm kính
+      const reefPaths = [
+        new THREE.CatmullRomCurve3([
+          new THREE.Vector3(5.8, 1.2, -18),
+          new THREE.Vector3(6.4, 2.2, -6),
+          new THREE.Vector3(5.5, 0.9, 8),
+          new THREE.Vector3(6.2, 1.8, -8)
+        ], true),
+        new THREE.CatmullRomCurve3([
+          new THREE.Vector3(-5.8, 1.4, -14),
+          new THREE.Vector3(-6.5, 2.2, -2),
+          new THREE.Vector3(-5.6, 1.0, 10),
+          new THREE.Vector3(-6.2, 1.8, -6)
+        ], true)
+      ];
 
-      if (extractedFish.length > 0) {
-        // Quỹ đạo bơi cho đàn cá rạn san hô 2 bên hầm kính
-        const reefPaths = [
-          new THREE.CatmullRomCurve3([
-            new THREE.Vector3(5.8, 1.2, -18),
-            new THREE.Vector3(6.4, 1.8, -6),
-            new THREE.Vector3(5.5, 0.9, 8),
-            new THREE.Vector3(6.2, 1.6, -8)
-          ], true),
-          new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-5.8, 1.4, -14),
-            new THREE.Vector3(-6.5, 1.0, -2),
-            new THREE.Vector3(-5.6, 2.0, 10),
-            new THREE.Vector3(-6.2, 1.3, -6)
-          ], true)
-        ];
-
-        for (let i = 0; i < 16; i++) {
-          const protoMesh = extractedFish[i % extractedFish.length];
-          const fishClone = protoMesh.clone();
-          const pIdx = i % 2;
-          const tOffset = (i * 0.12) % 1.0;
-          registerEntity(fishClone, reefPaths[pIdx], 0.028 + (i % 4) * 0.004, 0.75 + (i % 3) * 0.15, 0, 'tropical_fish', tOffset, null);
-        }
+      for (let i = 0; i < 16; i++) {
+        const fishClone = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(gltf.scene) : gltf.scene.clone();
+        const pIdx = i % 2;
+        const tOffset = (i * 0.12) % 1.0;
+        registerEntity(fishClone, reefPaths[pIdx], 0.028 + (i % 4) * 0.004, 0.85 + (i % 3) * 0.15, [0, Math.PI / 2, 0], 'tropical_fish', tOffset, gltf.animations);
       }
     });
 
@@ -705,7 +718,7 @@
           duration: 2.0,
           ease: "power3.inOut"
         });
-        modeDesc.innerHTML = "<b>Hầm Kính Thủy Cung:</b> 100% mô hình 3D thực tế từ Sketchfab chuyển động xương mềm mại, ánh nắng caustics dập dềnh và cột sủi bọt oxy. Bấm <b>[SPACE]</b> để lướt xuyên kính lặn tự do 360°!";
+        modeDesc.innerHTML = "<b>Hầm Kính Thủy Cung:</b> 100% mô hình 3D thực tế từ Sketchfab, bơi tiến tự nhiên, uốn lượn lên/xuống (Pitch), nghiêng mình vào cua (Banking Roll) và cử động xương sinh học. Bấm <b>[SPACE]</b> để lặn tự do 360°!";
         modeText.innerText = "Hầm Kính Thủy Cung";
         glassText.innerText = "Vòm Kính Acrylic";
         glassText.className = "text-emerald-300 font-bold";
@@ -717,7 +730,7 @@
     toggleDiveBtn.onclick = toggleDiveMode;
 
     // ========================================================================
-    // 8. VÒNG LẶP RENDER 60 FPS & CẬP NHẬT ANIMATION SKELETON
+    // 8. VÒNG LẶP RENDER 60 FPS & CẬP NHẬT ĐỘNG HỌC 3D TIẾN TỚI (FULL 3D LOOKAT)
     // ========================================================================
     let lastTime = performance.now();
     let frameCount = 0, fpsTimer = 0;
@@ -768,9 +781,9 @@
         b.mesh.position.z = b.baseZ + Math.cos(time) * b.wobbleAmp;
       });
 
-      // 2. CẬP NHẬT DI CHUYỂN THỦY ĐỘNG HỌC ỔN ĐỊNH CỦA CÁC MÔ HÌNH 3D SKETCHFAB
+      // 2. CẬP NHẬT CHUYỂN ĐỘNG 3D TIẾN TỚI, CHÚC/NGỬA & NGHIÊNG CÁNH THẬT
       animatedEntities.forEach(ent => {
-        ent.t += ent.speed * dt * 0.20;
+        ent.t += ent.speed * dt * 0.18;
         if (ent.t >= 1) ent.t -= 1;
 
         const pos = ent.curve.getPoint(ent.t);
@@ -785,26 +798,29 @@
           pos.y = Math.max(pos.y * push, 4.95);
         }
 
-        ent.mesh.position.copy(pos);
+        // Cập nhật vị trí
+        ent.container.position.copy(pos);
 
-        // Hướng bơi ngang thủy động học (Triệt tiêu chúc/ngửa)
-        const dx = nextPos.x - pos.x;
-        const dy = nextPos.y - pos.y;
-        const dz = nextPos.z - pos.z;
-        const horizontalDist = Math.max(0.001, Math.sqrt(dx * dx + dz * dz));
+        // HƯỚNG ĐẦU BƠI TIẾN 100% THEO VÉC-TƠ TIẾP TUYẾN 3D (THREE.JS NATIVE LOOKAT)
+        // Khi bơi chếch lên cao -> ngửa đầu lên (Pitch up)
+        // Khi bơi lặn xuống sâu -> chúc đầu xuống (Pitch down)
+        // Khi cua rẽ -> quay đầu mượt mà không bao giờ bị bơi lùi
+        ent.container.lookAt(nextPos);
 
-        const baseYaw = Math.atan2(dx, dz) + Math.PI + ent.yawOffset;
+        // TÍNH TOÁN NGHIÊNG THÂN THỦY ĐỘNG HỌC (BANKING ROLL KHI VÀO CUA)
+        const nextNextPos = ent.curve.getPoint((ent.t + 0.010) % 1);
+        const dx1 = nextPos.x - pos.x, dz1 = nextPos.z - pos.z;
+        const dx2 = nextNextPos.x - nextPos.x, dz2 = nextNextPos.z - nextPos.z;
+        const cross = dx1 * dz2 - dz1 * dx2; // Độ cong của góc rẽ
+        const bankAngle = Math.max(-0.25, Math.min(0.25, cross * 25.0));
+        ent.container.rotateZ(bankAngle);
 
-        let pitch = Math.atan2(dy, horizontalDist);
-        const maxPitch = (ent.type === 'whale') ? 0.06 : ((ent.type === 'manta') ? 0.12 : 0.18);
-        pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
-
-        let roll = 0;
-        if (ent.type === 'manta' || ent.type === 'dolphin') {
-          roll = Math.sin(currentTime * 0.002 + ent.phase) * 0.14;
+        // CỬ ĐỘNG QUẪY ĐUÔI TỰ NHIÊN (BODY WAGGING THEO SINH HỌC)
+        if (ent.type === 'trevally' || ent.type === 'shark' || ent.type === 'tropical_fish') {
+          ent.rotator.rotation.y = ent.baseRotY + Math.sin(currentTime * 0.008 * ent.wagSpeed + ent.phase) * ent.wagAmp;
+        } else if (ent.type === 'manta' || ent.type === 'dolphin') {
+          ent.rotator.rotation.z = Math.sin(currentTime * 0.003 + ent.phase) * 0.10;
         }
-
-        ent.mesh.rotation.set(pitch, baseYaw, roll, 'YXZ');
       });
 
       // 3. CẬP NHẬT SỨA PHÁT QUANG

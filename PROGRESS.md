@@ -62,6 +62,7 @@
 | **09** | Sinh vật bơi quá cao ngoài tầm nhìn hầm kính | Bán kính an toàn `minSafeRadius` cũ đặt quá lớn (19.5m) | Chuẩn hóa tỉ lệ hầm kính ($R = 4.6$m, cao 4.6m), đặt quỹ đạo bơi sát nóc vòm ($Y = 4.8 - 6.2$m) ngay tầm mắt khách. |
 | **10** | Cá Khế / Tuna bị tối màu do thiếu ánh sáng phản xạ | Model Sketchfab có màu vertex gốc tối (`0d0d0d`) | Gán màu vảy kim loại bạc ánh xanh (`0xd8eefe`, `metalness: 0.88`), biến đàn 12 con thành đàn Giant Trevally lấp lánh. |
 | **11** | Sàn đi bộ thiếu hiệu ứng nước lung linh | Sàn đá mài phẳng lì | Tích hợp GPU Shader Caustics dạng mạng lưới nắng dập dềnh phản chiếu trên sàn và vách bệ lan can. |
+| **12** | Sinh vật bơi lùi (đuôi đi trước, đầu đi sau) và thiếu chúc/ngửa 3D | Trục tọa độ gốc của các file GLTF Sketchfab không đồng nhất (một số theo +Z, một số theo X, một số theo -Z) và công thức tính Euler yaw cũ bị ngược 180° | Xây dựng kiến trúc 2 tầng `container -> rotator -> rawMesh`. Khắc phục triệt để bằng thực nghiệm kiểm chứng trục đầu hướng -Z của toàn bộ 7 loài. Sử dụng `container.lookAt(nextPos)` kết hợp tính toán góc nghiêng thân cua `rotateZ(bankAngle)` giúp cá bơi tiến 100%, tự động chúc đầu khi lặn, ngửa đầu khi leo cao và quẫy đuôi mềm mại. |
 
 ---
 
