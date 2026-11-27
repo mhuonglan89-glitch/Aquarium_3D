@@ -599,9 +599,54 @@ static void processInput(GLFWwindow* win, float dt) {
 }
 
 // -----------------------------------------------------------------------------
+// Lưu Framebuffer ra file ảnh BMP (Chụp ảnh màn hình trực tiếp từ GPU)
+// -----------------------------------------------------------------------------
+static void saveScreenshotBMP(const char* filename, int width, int height) {
+    std::vector<unsigned char> pixels(width * height * 3);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, pixels.data());
+
+    int rowSize = (width * 3 + 3) & (~3);
+    int imageSize = rowSize * height;
+    int fileSize = 54 + imageSize;
+
+    unsigned char fileHeader[14] = {
+        'B', 'M',
+        (unsigned char)(fileSize), (unsigned char)(fileSize >> 8), (unsigned char)(fileSize >> 16), (unsigned char)(fileSize >> 24),
+        0, 0, 0, 0,
+        54, 0, 0, 0
+    };
+    unsigned char infoHeader[40] = {
+        40, 0, 0, 0,
+        (unsigned char)(width), (unsigned char)(width >> 8), (unsigned char)(width >> 16), (unsigned char)(width >> 24),
+        (unsigned char)(height), (unsigned char)(height >> 8), (unsigned char)(height >> 16), (unsigned char)(height >> 24),
+        1, 0,
+        24, 0,
+        0, 0, 0, 0,
+        (unsigned char)(imageSize), (unsigned char)(imageSize >> 8), (unsigned char)(imageSize >> 16), (unsigned char)(imageSize >> 24),
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0
+    };
+
+    FILE* f = fopen(filename, "wb");
+    if (!f) return;
+    fwrite(fileHeader, 1, 14, f);
+    fwrite(infoHeader, 1, 40, f);
+    std::vector<unsigned char> padRow(rowSize, 0);
+    for (int y = 0; y < height; ++y) {
+        memcpy(padRow.data(), &pixels[y * width * 3], width * 3);
+        fwrite(padRow.data(), 1, rowSize, f);
+    }
+    fclose(f);
+    std::cout << "[SCREENSHOT] Da luu anh chup: " << filename << std::endl;
+}
+
+// -----------------------------------------------------------------------------
 // HÀM MAIN: TỔNG HỢP VÀ KHỞI CHẠY ĐỒ ÁN
 // -----------------------------------------------------------------------------
-int main() {
+int main(int argc, char* argv[]) {
     if (!glfwInit()) {
         std::cerr << "Khong the khoi tao GLFW." << std::endl;
         return 1;
@@ -749,19 +794,8 @@ int main() {
     std::cout << "  - Phim ESC        : Thoat chuong trinh\n";
     std::cout << "======================================================================\n\n";
 
-    double prevTime = glfwGetTime();
-
-    // -------------------------------------------------------------------------
-    // VÒNG LẶP RENDER CHÍNH (RENDER LOOP)
-    // -------------------------------------------------------------------------
-    while (!glfwWindowShouldClose(window)) {
-        double curTime = glfwGetTime();
-        float dt = (float)(curTime - prevTime);
-        prevTime = curTime;
-        if (dt > 0.05f) dt = 0.05f;
-
-        processInput(window, dt);
-
+    // Hàm vẽ toàn bộ khung cảnh 3D tại thời điểm t
+    auto renderScene = [&](float curTime) {
         int fbW = 0, fbH = 0;
         glfwGetFramebufferSize(window, &fbW, &fbH);
         glViewport(0, 0, fbW, fbH);
@@ -783,19 +817,15 @@ int main() {
         glUniform3f(uniforms.viewPosition, camPos.x, camPos.y, camPos.z);
         glUniform3f(uniforms.fogColor, fogCol.x, fogCol.y, fogCol.z);
         glUniform1f(uniforms.fogDensity, fogEnabled ? 0.045f : 0.0f);
-        glUniform1f(uniforms.time, (float)curTime);
+        glUniform1f(uniforms.time, curTime);
 
-        float t = (float)curTime;
+        float t = curTime;
 
-        // ---------------------------------------------------------------------
         // 1. Đáy cát biển (Caustics khúc xạ tia nắng rọi qua nước)
-        // ---------------------------------------------------------------------
         Mat4 seabed = modelMatrix(Vec3(0.0f, -2.55f, 0.5f), Vec3(22.0f, 0.35f, 18.0f));
         drawMeshShape(cube, uniforms, seabed, 0.45f, 0.35f, 0.22f, 1.0f, causticsEnabled ? 0.50f : 0.0f);
 
-        // ---------------------------------------------------------------------
         // 2. Rạn đá và San hô 3D của Bạn B (coral_reef.obj)
-        // ---------------------------------------------------------------------
         drawMeshShape(sphere, uniforms, modelMatrix(Vec3(-4.0f, -2.28f, -2.2f), Vec3(1.0f, 0.34f, 0.78f)), 0.30f, 0.28f, 0.24f, 1.0f);
         drawMeshShape(sphere, uniforms, modelMatrix(Vec3( 3.8f, -2.28f, -1.5f), Vec3(1.05f, 0.36f, 0.82f)), 0.32f, 0.30f, 0.26f, 1.0f);
         drawMeshShape(sphere, uniforms, modelMatrix(Vec3( 1.0f, -2.28f,  2.2f), Vec3(0.90f, 0.32f, 0.70f)), 0.34f, 0.31f, 0.25f, 1.0f);
@@ -811,9 +841,7 @@ int main() {
             drawObjModel(objCoral, uniforms, cM, coralTex, 0.90f, 0.95f, 1.0f, 1.0f);
         }
 
-        // ---------------------------------------------------------------------
         // 3. Cá Mập Voi bơi theo Quỹ đạo Bézier 3D của Bạn A + Shader uốn đuôi của Bạn B
-        // ---------------------------------------------------------------------
         if (sharkLoaded) {
             float sharkT = std::fmod(t * 0.040f, 1.0f);
             Vec3 sPos;
@@ -838,9 +866,7 @@ int main() {
             drawObjModel(objShark, uniforms, sMat, sharkTex, 1.0f, 1.0f, 1.0f, 1.0f, /*swim=*/1.0f);
         }
 
-        // ---------------------------------------------------------------------
         // 4. Cá đuối đại bàng lướt theo Quỹ đạo Bézier 3D + Shader vẫy cánh của Bạn B
-        // ---------------------------------------------------------------------
         if (rayLoaded) {
             float rayT = std::fmod(t * 0.048f, 1.0f);
             Vec3 rPos;
@@ -861,9 +887,7 @@ int main() {
             drawObjModel(objRay, uniforms, rMat, 0, 1.0f, 1.0f, 1.0f, 1.0f, /*swimMode=*/4.0f);
         }
 
-        // ---------------------------------------------------------------------
         // 5. Đàn cá hề bơi quanh rạn san hô
-        // ---------------------------------------------------------------------
         if (fishLoaded) {
             float fPhase = t * 0.55f;
             float fx = 2.7f * std::sin(fPhase);
@@ -874,9 +898,7 @@ int main() {
             drawObjModel(objFish, uniforms, fMat, fishTex, 1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        // ---------------------------------------------------------------------
-        // 6. Các loài cá GLB tải về (Barramundi, Cá nóc, Mahi Mahi, Seadragon, Seahorse)
-        // ---------------------------------------------------------------------
+        // 6. Các loài cá GLB tải về
         struct FishTrack {
             int species;
             float centerX, y, z, scale, speed, phase, range, forwardYaw, tailDirection;
@@ -912,7 +934,7 @@ int main() {
                          0, tintR, tintG, tintB, 1.0f, swimMode);
         }
 
-        // Đàn sứa phát sáng trôi dạt tự nhiên
+        // Đàn sứa phát sáng
         if (jellyfishLoaded) {
             float jellyX = -2.15f + 0.30f * std::sin(t * 0.22f);
             float jellyY = 1.48f + 0.10f * std::sin(t * 0.65f);
@@ -923,9 +945,7 @@ int main() {
                          1.30f, 1.30f, 1.35f, 1.0f, 0.0f, 1.10f);
         }
 
-        // ---------------------------------------------------------------------
         // 7. Hệ hạt Bọt Khí của Bạn B (80 hạt nổi lên từ san hô)
-        // ---------------------------------------------------------------------
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDepthMask(GL_FALSE);
@@ -936,32 +956,26 @@ int main() {
             drawMeshShape(sphere, uniforms, bubble, 0.62f, 0.88f, 0.96f, 0.55f);
         }
 
-        // ---------------------------------------------------------------------
         // 8. Bề mặt nước biển lấp lánh phía trên
-        // ---------------------------------------------------------------------
         Mat4 waterMat = multiply(translation(Vec3(0.0f, 2.55f, 0.0f)),
                                  multiply(rotationX(-PI * 0.5f), scaling(Vec3(12.0f, 12.0f, 1.0f))));
         drawMeshShape(glassQuad, uniforms, waterMat, 0.18f, 0.62f, 0.74f, 0.13f);
 
-        // ---------------------------------------------------------------------
-        // 9. [BẠN A] HẦM KÍNH THỦY CUNG (TUNNEL WALKWAY & DOME)
-        // Vẽ sàn tối màu, dải đèn LED cyan neon (#0CE8DA) phát sáng, dầm thép chịu lực,
-        // và vòm kính Acrylic trong suốt (Chỉ hiển thị khi ở Chế độ 1 trong hầm kính)
-        // ---------------------------------------------------------------------
+        // 9. [BẠN A] HẦM KÍNH THỦY CUNG
         if (!isDiving || camPos.z > 4.2f) {
             Mat4 idMat = identityMatrix();
 
-            // 9.1 Sàn hầm tối màu (Titanium Steel #1E293B)
+            // 9.1 Sàn hầm tối màu
             glDepthMask(GL_TRUE);
             drawMeshShape(tunnelFloor, uniforms, idMat, 0.12f, 0.16f, 0.22f, 1.0f);
 
-            // 9.2 Dải đèn LED neon dẫn lối dọc mép sàn (Bioluminescent Cyan #0CE8DA)
+            // 9.2 Dải đèn LED neon dẫn lối
             drawMeshShape(tunnelLeds, uniforms, idMat, 0.05f, 0.91f, 0.86f, 1.0f, 0.0f, /*emission=*/2.8f);
 
-            // 9.3 Dầm thép chịu lực uốn cong đỡ vòm kính
+            // 9.3 Dầm thép chịu lực
             drawMeshShape(tunnelRibs, uniforms, idMat, 0.20f, 0.25f, 0.32f, 1.0f);
 
-            // 9.4 Vòm kính Acrylic trong suốt (Alpha Blending, khử z-buffer conflict)
+            // 9.4 Vòm kính Acrylic trong suốt
             glDepthMask(GL_FALSE);
             drawMeshShape(tunnelGlass, uniforms, idMat, 0.20f, 0.65f, 0.85f, 0.26f);
         }
@@ -969,6 +983,61 @@ int main() {
         glDepthMask(GL_TRUE);
         glBindVertexArray(0);
         glfwSwapBuffers(window);
+    };
+
+    // Chế độ tự động chụp ảnh minh họa cho Slide thuyết trình
+    if (argc > 1 && std::string(argv[1]) == "--capture-shots") {
+        std::cout << "[CAPTURE] Bat dau tu dong chup 5 goc anh giao dien..." << std::endl;
+        struct ShotConfig {
+            const char* filename;
+            Vec3 pos;
+            float yaw, pitch, fov, time;
+            bool dive, fog, caustics;
+        } shots[] = {
+            {"shot_tunnel.bmp", Vec3(0.0f, -0.25f, 7.8f), -90.0f, -3.0f, 50.0f, 2.5f, false, true, true},
+            {"shot_dive.bmp", Vec3(0.0f, 0.40f, 3.2f), -90.0f, -2.0f, 68.0f, 4.0f, true, true, true},
+            {"shot_shark_bezier.bmp", Vec3(1.8f, 1.3f, 1.0f), -135.0f, -6.0f, 60.0f, 6.5f, true, true, true},
+            {"shot_corals_bubbles.bmp", Vec3(-1.8f, -1.2f, 2.8f), -70.0f, -12.0f, 55.0f, 10.0f, true, true, true},
+            {"shot_fog_comparison.bmp", Vec3(0.0f, 0.40f, 3.2f), -90.0f, -2.0f, 68.0f, 4.0f, true, false, true}
+        };
+
+        int fbW = 0, fbH = 0;
+        glfwGetFramebufferSize(window, &fbW, &fbH);
+
+        for (int i = 0; i < 5; ++i) {
+            camPos = shots[i].pos;
+            camYaw = shots[i].yaw;
+            camPitch = shots[i].pitch;
+            camFov = shots[i].fov;
+            isDiving = shots[i].dive;
+            fogEnabled = shots[i].fog;
+            causticsEnabled = shots[i].caustics;
+
+            for (int f = 0; f < 3; ++f) {
+                renderScene(shots[i].time);
+                glfwPollEvents();
+            }
+            saveScreenshotBMP(shots[i].filename, fbW, fbH);
+        }
+        std::cout << "[CAPTURE] Hoan tat chup 5 anh giao dien thuc te!" << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 0;
+    }
+
+    double prevTime = glfwGetTime();
+
+    // -------------------------------------------------------------------------
+    // VÒNG LẶP RENDER CHÍNH (RENDER LOOP)
+    // -------------------------------------------------------------------------
+    while (!glfwWindowShouldClose(window)) {
+        double curTime = glfwGetTime();
+        float dt = (float)(curTime - prevTime);
+        prevTime = curTime;
+        if (dt > 0.05f) dt = 0.05f;
+
+        processInput(window, dt);
+        renderScene((float)curTime);
         glfwPollEvents();
     }
 

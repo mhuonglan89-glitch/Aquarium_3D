@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Thuyết Trình: Mô Phỏng Thủy Cung 3D Tương Tác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+        .light-card {
+            background: #FFFFFF;
+            border: 1.5px solid #E2E8F0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col justify-between p-5 bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100">
+
+    <!-- Header bar -->
+    <header class="flex justify-between items-center border-b border-slate-200 pb-2.5">
+        <div class="flex items-center space-x-3">
+            <span class="px-3.5 py-1 bg-sky-100 text-sky-700 text-xs font-bold rounded-full border border-sky-300 uppercase tracking-wider">Đồ Án Đồ Họa Máy Tính</span>
+            <span class="text-sm font-bold text-slate-800">Mô Phỏng Thủy Cung 3D Tương Tác (OpenGL C++ & GLSL)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="notesToggle" onclick="toggleNotes()" class="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-xs text-sky-700 font-bold rounded-lg border border-slate-300 shadow-sm transition flex items-center space-x-1.5">
+                <span>🎙️</span><span>Hiện Lời Thoại (Speaker Notes)</span>
+            </button>
+            <span id="slideCounter" class="text-sm font-extrabold text-sky-700 px-3.5 py-1 bg-sky-100 rounded-lg border border-sky-300 shadow-sm">1 / 11</span>
+        </div>
+    </header>
+
+    <!-- Slide Content Viewport -->
+    <main id="slideContainer" class="flex-1 my-3 flex items-center justify-center relative overflow-hidden">
+        <!-- Content will be injected dynamically by JS -->
+    </main>
+
+    <!-- Footer / Navigation Bar -->
+    <footer class="flex justify-between items-center border-t border-slate-200 pt-2.5">
+        <div class="text-xs text-slate-500 flex items-center space-x-2">
+            <span>Dùng phím <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-bold shadow-sm">←</kbd> <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-bold shadow-sm">→</kbd> hoặc <kbd class="px-2.5 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-bold shadow-sm">Space</kbd> để chuyển slide | Bấm <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-bold shadow-sm">N</kbd> bật/tắt lời thoại</span>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="prevSlide()" class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold rounded-xl border border-slate-300 shadow-sm transition flex items-center space-x-1.5">
+                <span>◀</span><span>Trước</span>
+            </button>
+            <button onclick="nextSlide()" class="px-5 py-2 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white text-sm font-bold rounded-xl shadow-md shadow-sky-600/20 transition flex items-center space-x-1.5">
+                <span>Tiếp theo</span><span>▶</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Speaker Notes Modal / Drawer -->
+    <div id="notesPanel" class="hidden fixed bottom-16 right-6 w-[440px] max-h-80 p-5 bg-white rounded-2xl shadow-2xl border-2 border-sky-400 overflow-y-auto text-xs z-50">
+        <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-200">
+            <span class="font-extrabold text-sky-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <span>🎙️</span><span>Kịch bản Lời thoại thuyết trình</span>
+            </span>
+            <button onclick="toggleNotes()" class="text-slate-400 hover:text-slate-700 font-bold text-sm">✕</button>
+        </div>
+        <p id="notesContent" class="text-slate-700 leading-relaxed whitespace-pre-line text-[13px]"></p>
+    </div>
+
+    <script>
+        const slides = [
+            {
+                category: "Giới Thiệu Đồ Án",
+                title: "MÔ PHỎNG THỦY CUNG 3D TƯƠNG TÁC",
+                presenter: "CẢ 2 BẠN",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_dive.png",
+                caption1: "Ảnh giao diện thực tế: Không gian mô phỏng Thủy cung 3D (OpenGL 3.3)",
+                img2: null,
+                items: [
+                    "BẠN A (Kỹ sư Toán học & Hình học - Backend): Hầm kính bán nguyệt tham số (CG.5), Quỹ đạo Bézier 3D bậc 3 (CG.5), Hệ thống Camera kép 6-DOF & LERP Xuyên Kính (CG.4), Sàn hành lang và dải LED cyan neon.",
+                    "BẠN B (Kỹ sư Vật liệu & Shaders - Frontend): Mô hình chiếu sáng Blinn-Phong (CG.6), Khúc xạ tia nắng Caustics & Sương mù biển sâu (CG.6), Vertex Shader uSwim thời gian thực, Pipeline 8 loài cá 3D & Hệ hạt bọt khí."
+                ],
+                notes: "[LỜI THOẠI BẠN A]: Kính chào Thầy Cô và các bạn. Hôm nay nhóm em xin đại diện trình bày đồ án 'Mô phỏng Thủy cung 3D Tương tác' trên Modern OpenGL C++ và GLSL. Nhóm gồm 2 thành viên: Em là Bạn A phụ trách Toán học, Hình học tham số và Camera; Bạn B phụ trách Shaders, Vật liệu và Tài nguyên 3D."
+            },
+            {
+                category: "Kiến Trúc Hệ Thống",
+                title: "Kiến trúc Đồ họa Tổng quan (Graphics Pipeline Flow)",
+                presenter: "BẠN A",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_tunnel.png",
+                caption1: "Ảnh giao diện thực tế: Góc nhìn từ trong hầm kính ra đại dương",
+                img2: null,
+                items: [
+                    "1. CPU (C++ Engine) — Bạn A & Bạn B: Quản lý ma trận biến đổi Model, View, Projection; nội suy giải tích Bézier 3D; xử lý tương tác bàn phím (WASD, E/Q, SPACE) & chuột 360°; nạp mô hình OBJ và GLB.",
+                    "2. GPU (GLSL Shaders) — Bạn B: ocean_fog.vs uốn đuôi cá theo hàm sóng sin uSwim; ocean_fog.fs tính toán Blinn-Phong Specular, tia nắng Caustics và sương mù Exponential Fog.",
+                    "3. Đạt chuẩn 60 FPS cố định (V-Sync) mượt mà, khử nghẽn cổ chai hoàn toàn."
+                ],
+                notes: "[LỜI THOẠI BẠN A]: Kiến trúc hệ thống tách biệt CPU và GPU. Trên CPU, chúng em quản lý ma trận quan sát, toán học Bézier và Camera. Trên GPU, Shader đảm nhận toàn bộ việc uốn vây uốn đuôi và đổ bóng nước biển. Nhờ tối ưu hóa tính toán song song, chương trình đạt 60 FPS mượt mà."
+            },
+            {
+                category: "Toán Học & Hình Học (CG.5)",
+                title: "Hình học Tham số: Vòm Kính Acrylic & Kết Cấu Hầm",
+                presenter: "BẠN A",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_tunnel.png",
+                caption1: "Ảnh thực tế: Vòm kính Acrylic và Dải đèn LED neon phát sáng",
+                img2: "slide_assets/code_tunnel_math.png",
+                caption2: "Ảnh mã nguồn: Hàm createTunnelGlass() sinh vòm kính 2 lớp pháp tuyến",
+                items: [
+                    "Phương trình vòm kính nửa hình trụ: x = R*cos(theta), y = y0 + R*sin(theta), z in [zStart, zEnd] với theta in [0, pi].",
+                    "Lưới tam giác 2 lớp (Double-sided): Nhân đôi pháp tuyến (-N) mặt trong giúp quan sát từ cả 2 phía không bị Culling.",
+                    "Dầm thép Titanium Steel: Vòng cung uốn cong chịu lực cách đều Delta z = 1.25m.",
+                    "Dải đèn LED neon cyan (#0CE8DA): Chạy dọc 2 bên mép sàn, Emission = 2.8 phát quang rực rỡ trong nước tối."
+                ],
+                notes: "[LỜI THOẠI BẠN A]: Em đã áp dụng lý thuyết Mặt cong tham số trong Chương CG.5 để sinh lưới vòm kính hình nửa trụ từ phương trình toán học thuần túy. Để người đứng trong hầm nhìn ra thấy kính mà bơi ngoài nhìn vào cũng thấy, em sinh lưới 2 lớp đối xứng pháp tuyến. Hầm còn có dầm thép chịu lực và dải LED neon phát sáng dẫn lối."
+            },
+            {
+                category: "Toán Học & Hình Học (CG.5)",
+                title: "Quỹ đạo Bézier 3D Bậc 3 & Định hướng Tiếp tuyến",
+                presenter: "BẠN A",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_shark_bezier.png",
+                caption1: "Ảnh thực tế: Cá Mập Voi lượn theo đường cong Bézier 3D quanh rạn san hô",
+                img2: "slide_assets/code_bezier_math.png",
+                caption2: "Ảnh mã nguồn: Hàm getTangent() và tính góc xoay đầu cá Yaw/Pitch",
+                items: [
+                    "Công thức Bernstein bậc 3: B(t) = (1-t)^3*P0 + 3(1-t)^2*t*P1 + 3(1-t)*t^2*P2 + t^3*P3. Đạt tính liên tục mượt mà C1 và G1.",
+                    "Đạo hàm bậc 1 tính Vector Tiếp tuyến: B'(t) = 3(1-t)^2(P1-P0) + 6(1-t)t(P2-P1) + 3t^2(P3-P2).",
+                    "Góc xoay đầu cá tự động: Yaw = atan2(-Tz, Tx); Pitch = atan2(Ty, |T_xz|).",
+                    "Kết quả: Cá lượn vòng tự nhiên, đầu cá luôn đón hướng vector vận tốc."
+                ],
+                notes: "[LỜI THOẠI BẠN A]: Để đàn cá lớn bơi tự nhiên, em áp dụng Đường cong Bézier 3D bậc 3. Điểm đặc sắc là em đã giải tích đạo hàm bậc 1 để tìm Vector tiếp tuyến B'(t). Từ đó, tính ra góc Yaw để xoay đầu cá theo hướng bơi và góc Pitch để cá chúi đầu xuống hoặc ngóc lên khi đổi độ sâu."
+            },
+            {
+                category: "Quan Sát & Tương Tác (CG.4)",
+                title: "Hệ thống Camera kép 6-DOF & Thuật toán LERP Xuyên Kính",
+                presenter: "BẠN A",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_dive.png",
+                caption1: "Ảnh thực tế: Chế độ Lặn Biển 100% không kính sau khi bấm SPACE",
+                img2: "slide_assets/code_camera_lerp.png",
+                caption2: "Ảnh mã nguồn: Thuật toán LERP nội suy vị trí và phím SPACE chuyển đổi",
+                items: [
+                    "Thuật toán LERP nội suy mượt mà: P(t) = mix(P_current, P_target, dt * 3.5); FOV(t) = mix(FOV_current, FOV_target, dt * 3.5).",
+                    "Chế độ 1 (Trong hầm): Đi bộ dọc hành lang bằng W, A, S, D; FOV = 50 độ.",
+                    "Phím [SPACE]: Camera lướt qua kính, hầm kính ẩn đi hoàn toàn (100% không kính), chuyển sang Chế độ 2 Lặn biển tự do 6-DOF.",
+                    "Điều khiển 6-DOF: W, A, S, D bơi đa hướng, phím E bơi ngoi lên, phím Q lặn xuống sâu, chuột xoay 360 độ."
+                ],
+                notes: "[LỜI THOẠI BẠN A]: Tính năng tương tác độc đáo nhất là Camera kép với hiệu ứng LERP Xuyên Kính. Ban đầu khách tham quan đi bộ trong hầm. Khi bấm phím SPACE, thuật toán LERP đẩy camera lướt xuyên qua kính ra đại dương bao la, hầm kính lập tức ẩn đi đem lại cảm giác hòa mình 100% vào làn nước. Nhấn SPACE lần nữa sẽ lùi về hầm kính. Sau đây xin nhường lời cho Bạn B."
+            },
+            {
+                category: "Vật Liệu & Shaders (CG.6)",
+                title: "Mô hình Chiếu sáng Blinn-Phong & Vật liệu Nước",
+                presenter: "BẠN B",
+                badgeColor: "bg-emerald-600 text-white",
+                img1: "slide_assets/shot_shark_bezier.png",
+                caption1: "Ảnh thực tế: Điểm sáng gương Specular trên lưng cá mập voi",
+                img2: "slide_assets/code_blinn_phong.png",
+                caption2: "Ảnh mã nguồn: Blinn-Phong Halfway Vector H và Sương mù Fog",
+                items: [
+                    "Công thức 3 thành phần phản xạ: I = I_ambient + I_diffuse + I_specular.",
+                    "Cải tiến Halfway Vector H = normalize(L + V) thay cho vector phản xạ R, điểm sáng gương trên vảy cá chân thực và tiết kiệm chu kỳ GPU.",
+                    "Texture Mapping 2K: Da cá mập voi đốm trắng, thân cá đuối, cá hề, san hô.",
+                    "Kênh phát sáng uEmission = 2.8 giúp dải đèn LED và đàn sứa phát quang rực rỡ trong nước tối."
+                ],
+                notes: "[LỜI THOẠI BẠN B]: Kính thưa Thầy Cô, sau phần khung xương của Bạn A, em thổi hồn vào không gian bằng hệ thống Shaders. Em áp dụng mô hình Blinn-Phong với Halfway Vector H, giúp điểm sáng bóng trên vảy cá chân thực và tối ưu hiệu năng. Tất cả sinh vật đều được bọc Texture 2K chân thực, kết hợp kênh Emission phát sáng."
+            },
+            {
+                category: "Quang Học Đại Dương (CG.6)",
+                title: "Hiệu ứng Quang học: Caustics & Sương Mù Biển Sâu",
+                presenter: "BẠN B",
+                badgeColor: "bg-emerald-600 text-white",
+                img1: "slide_assets/shot_dive.png",
+                caption1: "Ảnh thực tế: Sương mù đại dương sâu và vệt nắng Caustics trên cát",
+                img2: "slide_assets/shot_fog_comparison.png",
+                caption2: "Ảnh thực nghiệm: Khi bấm phím F tắt sương mù (nước trong suốt)",
+                items: [
+                    "Khúc xạ Caustics trên cát: Giao thoa 2 hàm sóng sin lượng giác theo thời gian thực mô phỏng tia nắng bị mặt nước bẻ cong lấp lánh dưới đáy cát.",
+                    "Sương mù đại dương sâu (Exponential Ocean Fog): fogFactor = exp(-density * distance); finalColor = mix(FogColor, LitColor, fogFactor).",
+                    "Màu biển sâu Deep Marine (#095273) tạo chiều sâu điện ảnh và khử hiện tượng popping vật thể ở xa.",
+                    "Tương tác tức thì: Phím F bật/tắt Fog, Phím C bật/tắt Caustics."
+                ],
+                notes: "[LỜI THOẠI BẠN B]: Để tái hiện làn nước biển chân thực, em tích hợp hai hiệu ứng quang học: Khúc xạ Caustics trên cát bằng giao thoa sóng sin lấp lánh, và Sương mù biển sâu Exponential Fog theo hàm mũ e^(-density * d). Người dùng có thể nhấn phím F để tắt/bật sương mù hoặc phím C để tắt/bật Caustics trực tiếp khi demo."
+            },
+            {
+                category: "Biến Dạng Đỉnh GPU (CG.6)",
+                title: "Đồ họa Chuyển động: Vertex Shader Uốn Vây Đuôi",
+                presenter: "BẠN B",
+                badgeColor: "bg-emerald-600 text-white",
+                img1: "slide_assets/shot_shark_bezier.png",
+                caption1: "Ảnh thực tế: Đuôi cá mập uốn lượn và cá đuối vỗ cánh mềm mại",
+                img2: "slide_assets/code_uswim_shader.png",
+                caption2: "Ảnh mã nguồn: Biến dạng đỉnh sinh học uSwim trong Vertex Shader",
+                items: [
+                    "Biến dạng Đuôi Cá Mập Voi (uSwim = 1.0): Hàm trọng số tailWeight tăng dần về đuôi, sóng ngang Z = sin(4.2t + 3.0x)*0.085*w tạo cú quẫy đuôi đẩy nước mạnh mẽ.",
+                    "Biến dạng Vẫy cánh Cá Đuối Đốm (uSwim = 4.0): Hàm trọng số wingWeight tăng dần ra 2 đầu cánh, sóng đứng Y = sin(2.2t + 3.4z)*0.10*w mô phỏng nhịp đập cánh mềm mại.",
+                    "Ưu điểm vượt trội: GPU xử lý song song 15.000 đỉnh cùng lúc, 0% CPU, đảm bảo 60 FPS cố định."
+                ],
+                notes: "[LỜI THOẠI BẠN B]: Thay vì dùng khung xương phức tạp làm nặng máy, em lập trình biến dạng sinh học trực tiếp trên Vertex Shader. Với Cá Mập Voi, đỉnh càng gần đuôi thì biên độ quẫy ngang Z càng lớn. Với Cá Đuối, đỉnh càng xa về hai đầu cánh thì biên độ đập cánh Y càng cao. Toàn bộ 15.000 đỉnh được GPU tính toán song song tức thì."
+            },
+            {
+                category: "Mô Hình Hóa & Hệ Hạt (CG.2/6)",
+                title: "Pipeline Tài nguyên 3D & Hệ Hạt Bọt Khí (Particles)",
+                presenter: "BẠN B",
+                badgeColor: "bg-emerald-600 text-white",
+                img1: "slide_assets/shot_corals_bubbles.png",
+                caption1: "Ảnh thực tế: 3 Khối San hô, Cá hề và 80 Hạt bọt khí oxy nổi",
+                img2: "slide_assets/code_particles_zbuffer.png",
+                caption2: "Ảnh mã nguồn: Quản lý thứ tự vẽ Z-Buffer và Alpha Blending",
+                items: [
+                    "Nạp mô hình đa định dạng: TinyOBJ (Cá mập voi, Cá đuối, Cá hề, 3 cụm San hô); Khronos cgltf (Cá chẽm, Cá nóc, Mahi Mahi, Hải long lá, Cá ngựa, Đàn sứa phát sáng).",
+                    "Hệ hạt Bọt khí Particle System (80 hạt): Nổi liên tục từ hốc san hô, dao động tán xạ ngang ngẫu nhiên, tự hồi sinh khi chạm mặt nước.",
+                    "Quản lý Z-Buffer & Alpha Blending: Vẽ vật thể đặc trước với glDepthMask(GL_TRUE), sau đó khóa ghi độ sâu glDepthMask(GL_FALSE) vẽ bọt khí và kính Acrylic, chống rách hình Z-fighting."
+                ],
+                notes: "[LỜI THOẠI BẠN B]: Về tài nguyên, hệ thống hỗ trợ cả OBJ và GLB Binary với 8 loài cá và đàn sứa. Em lập trình hệ hạt 80 bọt khí oxy nổi liên tục từ san hô. Để các vật thể trong suốt nhìn xuyên thấu qua nhau không bị lỗi Z-fighting, em tuân thủ nghiêm ngặt quy trình Z-Buffer: vẽ vật thể đặc trước, sau đó khóa ghi depth mask rồi mới vẽ vật thể trong suốt."
+            },
+            {
+                category: "Thực Nghiệm Thực Tế",
+                title: "Kịch bản Trình diễn Trực tiếp (Live Demonstration)",
+                presenter: "PHỐI HỢP CẢ 2 BẠN",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_tunnel.png",
+                caption1: "Pha 1: Trải nghiệm trong Hầm kính",
+                img2: "slide_assets/shot_dive.png",
+                caption2: "Pha 2: Bấm SPACE LERP lặn biển 100% không kính",
+                items: [
+                    "Pha 1 (Bạn A): Khởi động chương trình 60 FPS, bước đi dọc hầm kính ngắm toàn cảnh qua kính vòm, giới thiệu dải LED và dầm thép.",
+                    "Pha 2 (Bạn A): Bấm phím SPACE kích hoạt LERP xuyên kính lướt ra đại dương, hầm kính biến mất, trình diễn lặn 6-DOF (E bơi lên, Q lặn sâu).",
+                    "Pha 3 (Bạn B): Thuyết minh chuyển động bơi Bézier kết hợp uốn đuôi shader; bấm phím F tắt/bật sương mù và phím C kiểm tra Caustics trên cát."
+                ],
+                notes: "[LỜI THOẠI PHỐI HỢP DEMO]:\\nBạn A: 'Sau đây chúng em xin demo trực tiếp chương trình. Như Thầy Cô thấy, hiện tại em đang đứng trên sàn hành lang hầm kính với dải đèn LED cyan neon dẫn lối. Nhìn lên trên qua kính vòm là đàn cá đang bơi.'\\nBạn A: (Bấm phím SPACE) 'Bây giờ em bấm SPACE. Thuật toán LERP đưa camera lướt xuyên qua kính ra lòng biển sâu, hầm kính biến mất nhường chỗ cho đại dương tự do 6-DOF.'\\nBạn B: 'Ở góc nhìn lặn này, Thầy Cô quan sát thấy Cá Mập bơi theo quỹ đạo Bézier của Bạn A kết hợp uốn đuôi shader của em. Em xin bấm phím F để tắt bật sương mù và phím C để kiểm tra khúc xạ Caustics trên đáy cát.'"
+            },
+            {
+                category: "Tổng Kết & Hỏi Đáp",
+                title: "Kết luận, Đánh giá & Định hướng Phát triển",
+                presenter: "CẢ 2 BẠN",
+                badgeColor: "bg-sky-600 text-white",
+                img1: "slide_assets/shot_dive.png",
+                caption1: "Tổng kết Đồ án: Thủy cung 3D Tương tác hoàn chỉnh (Modern OpenGL C++)",
+                img2: null,
+                items: [
+                    "Hiện thực hóa trọn vẹn 4 chương trọng tâm ĐHMT: CG.3 (Biến đổi phân cấp), CG.4 (Camera 6-DOF & LERP), CG.5 (Mặt cong tham số & Bézier 3D), CG.6 (Blinn-Phong, Texture 2K, Fog, Caustics, uSwim).",
+                    "Hiệu năng ấn tượng: 60 FPS cố định, hoạt động mượt mà ổn định.",
+                    "Sự phối hợp ăn khớp 100% giữa hai phân hệ của Bạn A và Bạn B.",
+                    "Hướng mở rộng: Shadow Mapping đổ bóng san hô và thuật toán bầy đàn Boids Algorithm."
+                ],
+                notes: "[LỜI THOẠI BẠN B KẾT THÚC]: Kính thưa Thầy Cô, qua đồ án này, nhóm chúng em đã làm chủ trọn vẹn đường ống đồ họa Modern OpenGL: từ toán học biến đổi, mặt cong tham số, camera tương tác cho đến kỹ thuật lập trình shader thời gian thực trên GPU. Chúng em xin chân thành cảm ơn Thầy Cô đã tận tình giảng dạy. Nhóm em rất mong nhận được những góp ý và câu hỏi phản biện của Thầy Cô ạ!"
+            }
+        ];
+
+        let currentIndex = 0;
+
+        function renderSlide() {
+            const slide = slides[currentIndex];
+            document.getElementById('slideCounter').innerText = `${currentIndex + 1} / ${slides.length}`;
+            document.getElementById('notesContent').innerText = slide.notes;
+
+            let visualHtml = '';
+            if (slide.img1 && slide.img2) {
+                visualHtml = `
+                    <div class="flex flex-col space-y-3 h-full justify-center">
+                        <div class="light-card rounded-xl p-2.5 flex flex-col items-center">
+                            <img src="${slide.img1}" class="rounded-lg max-h-[195px] w-auto object-contain border border-slate-200 shadow-sm">
+                            <p class="text-[11.5px] text-sky-700 font-bold mt-1.5 text-center">${slide.caption1}</p>
+                        </div>
+                        <div class="light-card rounded-xl p-2.5 flex flex-col items-center">
+                            <img src="${slide.img2}" class="rounded-lg max-h-[195px] w-auto object-contain border border-slate-200 shadow-sm">
+                            <p class="text-[11.5px] text-sky-700 font-bold mt-1.5 text-center">${slide.caption2}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (slide.img1) {
+                visualHtml = `
+                    <div class="light-card rounded-xl p-3 flex flex-col items-center justify-center h-full">
+                        <img src="${slide.img1}" class="rounded-lg max-h-[410px] w-auto object-contain border border-slate-200 shadow-md">
+                        <p class="text-xs text-sky-700 font-bold mt-2 text-center">${slide.caption1}</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('slideContainer').innerHTML = `
+                <div class="w-full max-w-7xl h-full flex flex-col justify-between py-1">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-sky-600">${slide.category}</span>
+                            <h2 class="text-2xl lg:text-3xl font-extrabold text-slate-900 mt-0.5">${slide.title}</h2>
+                        </div>
+                        <span class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${slide.badgeColor}">
+                            ${slide.presenter}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-5 flex-1 items-stretch overflow-hidden">
+                        <!-- Left: Bullet points (7 cols) -->
+                        <div class="col-span-7 light-card rounded-2xl p-6 flex flex-col justify-center overflow-y-auto">
+                            <h3 class="text-base font-extrabold text-sky-800 mb-3 flex items-center space-x-2">
+                                <span class="text-sky-600 text-lg">✦</span><span>Trọng tâm Nội dung & Kỹ thuật ĐHMT</span>
+                            </h3>
+                            <ul class="space-y-3.5 text-slate-800">
+                                ${slide.items.map(item => `<li class="flex items-start space-x-3"><span class="text-sky-600 font-bold text-lg leading-none mt-0.5">•</span><span class="leading-relaxed text-[14.5px] font-medium">${item}</span></li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Right: Visual Media (5 cols) -->
+                        <div class="col-span-5 h-full overflow-hidden">
+                            ${visualHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderSlide();
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex < slides.length - 1) {
+                currentIndex++;
+                renderSlide();
+            }
+        }
+
+        function toggleNotes() {
+            const p = document.getElementById('notesPanel');
+            p.classList.toggle('hidden');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
+            } else if (e.key.toLowerCase() === 'n') {
+                toggleNotes();
+            }
+        });
+
+        renderSlide();
+    </script>
+</body>
+</html>
