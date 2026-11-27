@@ -1,0 +1,10 @@
+# Wavefront MTL file for clownfish
+# Texture: clownfish_2k.ppm
+
+newmtl clownfish
+Kd 1.000 1.000 1.000
+Ka 0.200 0.200 0.200
+Ks 0.350 0.350 0.350
+Ns 48.0
+d 1.0
+map_Kd ../textures/clownfish_2k.ppm

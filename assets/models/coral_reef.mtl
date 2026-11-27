@@ -1,0 +1,10 @@
+# Wavefront MTL file for coral_reef
+# Texture: coral_base.png
+
+newmtl coral_reef
+Kd 1.000 1.000 1.000
+Ka 0.250 0.150 0.180
+Ks 0.200 0.200 0.200
+Ns 24.0
+d 1.0
+map_Kd coral-reef_body_basecolor.jpg

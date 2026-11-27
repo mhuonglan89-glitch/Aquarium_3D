@@ -1,19 +1,12 @@
-# Visual Studio, C++, MinGW
-.vs/
-out/
-build/
-bin/
-obj/
-*.exe
-# Object files from build
+# Dev-C++ generated files
 *.o
-*.obj
-!assets/models/*.obj
-*.log
-*.tlog
-*.idb
-*.pdb
-*.ilk
-*.suo
-*.user
-.vscode/
+*.exe
+*.layout
+*.depend
+*.bak
+*.zip
+
+# Keep source placeholders while folders are empty
+!assets/**/.gitkeep
+!include/.gitkeep
+!lib/.gitkeep
