@@ -81,20 +81,20 @@ int main() {
     // 4. Khởi tạo Vòm kính & Quỹ đạo Bézier 3D (Của BẠN A)
     Tunnel glassTunnel(160.0f, 1500.0f); // Bán kính vòm 160, dài 1500
 
-    // Quỹ đạo bơi Bézier của cá mập voi (Lượn vòng quanh và băng qua đỉnh vòm kính)
+    // Quỹ đạo bơi Bézier của cá mập voi (Lượn hình vòng cung lớn ngay phía trên và trước tầm nhìn)
     BezierPath sharkPath(
-        glm::vec3(-260.0f,  70.0f,  250.0f),
-        glm::vec3(-80.0f,  120.0f, -150.0f),
-        glm::vec3( 160.0f,  90.0f, -50.0f),
-        glm::vec3( 280.0f,  60.0f,  250.0f)
+        glm::vec3(-160.0f,  65.0f,  -60.0f),
+        glm::vec3( -30.0f,  95.0f,   30.0f),
+        glm::vec3(  60.0f, 110.0f,  120.0f),
+        glm::vec3( 180.0f,  85.0f,  220.0f)
     );
 
-    // Quỹ đạo bơi Bézier của cá đuối (Lướt ngay sát trên nóc vòm kính hầm - đỉnh vòm kính R=160)
+    // Quỹ đạo bơi Bézier của cá đuối (Lướt sát nóc vòm kính ngay phía trước người xem)
     BezierPath rayPath(
-        glm::vec3(-100.0f, 175.0f, -250.0f),
-        glm::vec3(  20.0f, 185.0f,    0.0f),
-        glm::vec3(  80.0f, 180.0f,  200.0f),
-        glm::vec3( 160.0f, 175.0f,  450.0f)
+        glm::vec3(  60.0f, 130.0f,  -40.0f),
+        glm::vec3(  10.0f, 140.0f,   30.0f),
+        glm::vec3( -30.0f, 135.0f,  100.0f),
+        glm::vec3(-100.0f, 125.0f,  180.0f)
     );
 
     std::cout << "========================================================\n";
@@ -135,7 +135,7 @@ int main() {
         // BƯỚC 1: VẼ SINH VẬT BIỂN (Vật thể đặc bên ngoài vẽ trước)
         // --------------------------------------------------------------------
         // 1.1 Cá mập voi bơi theo đường cong Bézier 3D (Bạn A tính toán, Bạn B vẽ)
-        static float tShark = 0.0f;
+        static float tShark = 0.20f;
         tShark += deltaTime * 0.035f;
         if (tShark > 1.0f) tShark = 0.0f;
         glm::vec3 sharkPos = sharkPath.GetPoint(tShark);
@@ -146,13 +146,14 @@ int main() {
         modelShark = glm::translate(modelShark, sharkPos);
         modelShark = glm::rotate(modelShark, sharkAngle, glm::vec3(0, 1, 0));
         modelShark = glm::rotate(modelShark, sharkPitch, glm::vec3(1, 0, 0));
-        modelShark = glm::scale(modelShark, glm::vec3(8.0f));
+        modelShark = glm::rotate(modelShark, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+        modelShark = glm::scale(modelShark, glm::vec3(25.0f));
         oceanShader.setMat4("model", modelShark);
         oceanShader.setBool("isFish", true);
         whaleShark.Draw(oceanShader);
 
         // 1.2 Cá đuối đốm lướt trên nóc vòm kính
-        static float tRay = 0.2f;
+        static float tRay = 0.35f;
         tRay += deltaTime * 0.045f;
         if (tRay > 1.0f) tRay = 0.0f;
         glm::vec3 rayPos = rayPath.GetPoint(tRay);
@@ -163,7 +164,8 @@ int main() {
         modelRay = glm::translate(modelRay, rayPos);
         modelRay = glm::rotate(modelRay, rayAngle, glm::vec3(0, 1, 0));
         modelRay = glm::rotate(modelRay, rayPitch, glm::vec3(1, 0, 0));
-        modelRay = glm::scale(modelRay, glm::vec3(6.0f));
+        modelRay = glm::rotate(modelRay, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+        modelRay = glm::scale(modelRay, glm::vec3(22.0f));
         oceanShader.setMat4("model", modelRay);
         oceanShader.setBool("isFish", false);
         eagleRay.Draw(oceanShader);
@@ -171,30 +173,44 @@ int main() {
         // 1.3 Rạn san hô cố định ở đáy cát hai bên vòm kính
         oceanShader.setBool("isFish", false);
         glm::mat4 modelCoral1 = glm::mat4(1.0f);
-        modelCoral1 = glm::translate(modelCoral1, glm::vec3(165.0f, 0.0f, -50.0f));
-        modelCoral1 = glm::scale(modelCoral1, glm::vec3(5.0f));
+        modelCoral1 = glm::translate(modelCoral1, glm::vec3(145.0f, 0.0f, -120.0f));
+        modelCoral1 = glm::scale(modelCoral1, glm::vec3(60.0f));
         oceanShader.setMat4("model", modelCoral1);
         coralReef.Draw(oceanShader);
 
         glm::mat4 modelCoral2 = glm::mat4(1.0f);
-        modelCoral2 = glm::translate(modelCoral2, glm::vec3(-165.0f, 0.0f, 50.0f));
-        modelCoral2 = glm::scale(modelCoral2, glm::vec3(4.5f));
+        modelCoral2 = glm::translate(modelCoral2, glm::vec3(-135.0f, 0.0f, -10.0f));
+        modelCoral2 = glm::scale(modelCoral2, glm::vec3(55.0f));
         oceanShader.setMat4("model", modelCoral2);
         coralReef.Draw(oceanShader);
 
-        // 1.4 Đàn cá hề bơi quanh rạn san hô
+        // 1.4 Đàn cá hề bơi quanh rạn san hô hai bên hầm kính
         oceanShader.setBool("isFish", true);
         for (int i = 0; i < 6; ++i) {
-            float phase = currentFrame * 1.5f + i * 1.0f;
+            float phase = currentFrame * 1.8f + i * 1.05f;
             glm::vec3 cfPos = glm::vec3(
-                165.0f + sin(phase) * 30.0f,
-                25.0f + cos(phase * 0.8f) * 15.0f,
-                -50.0f + cos(phase) * 30.0f
+                145.0f + sin(phase) * 22.0f,
+                22.0f + cos(phase * 0.9f) * 12.0f,
+                -120.0f + cos(phase) * 22.0f
             );
             glm::mat4 modelCF = glm::mat4(1.0f);
             modelCF = glm::translate(modelCF, cfPos);
-            modelCF = glm::rotate(modelCF, -phase, glm::vec3(0, 1, 0));
-            modelCF = glm::scale(modelCF, glm::vec3(1.8f));
+            modelCF = glm::rotate(modelCF, -phase + glm::radians(90.0f), glm::vec3(0, 1, 0));
+            modelCF = glm::scale(modelCF, glm::vec3(35.0f));
+            oceanShader.setMat4("model", modelCF);
+            clownfish.Draw(oceanShader);
+        }
+        for (int i = 0; i < 5; ++i) {
+            float phase = currentFrame * 1.6f + i * 1.25f;
+            glm::vec3 cfPos = glm::vec3(
+                -135.0f + sin(phase) * 20.0f,
+                25.0f + sin(phase * 0.8f) * 10.0f,
+                -60.0f + cos(phase) * 20.0f
+            );
+            glm::mat4 modelCF = glm::mat4(1.0f);
+            modelCF = glm::translate(modelCF, cfPos);
+            modelCF = glm::rotate(modelCF, -phase + glm::radians(90.0f), glm::vec3(0, 1, 0));
+            modelCF = glm::scale(modelCF, glm::vec3(32.0f));
             oceanShader.setMat4("model", modelCF);
             clownfish.Draw(oceanShader);
         }
@@ -215,6 +231,21 @@ int main() {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        static int frameCount = 0;
+        frameCount++;
+        if (frameCount == 15) {
+            std::vector<unsigned char> pixels(SCR_WIDTH * SCR_HEIGHT * 3);
+            glReadPixels(0, 0, SCR_WIDTH, SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+            FILE* f = fopen("live_opengl_frame.ppm", "wb");
+            if (f) {
+                fprintf(f, "P6\n%d %d\n255\n", SCR_WIDTH, SCR_HEIGHT);
+                for (int y = SCR_HEIGHT - 1; y >= 0; --y) {
+                    fwrite(&pixels[y * SCR_WIDTH * 3], 1, SCR_WIDTH * 3, f);
+                }
+                fclose(f);
+            }
+        }
     }
 
     glfwTerminate();

@@ -37,7 +37,7 @@ public:
         targetPos = startPos;
         WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
         Yaw = 90.0f; // Nhìn dọc theo đường hầm (hướng +Z)
-        Pitch = 0.0f;
+        Pitch = 8.0f; // Hơi ngẩng đầu lên ngắm vòm kính và cá bơi trên trần
         Front = glm::vec3(0.0f, 0.0f, 1.0f);
         MovementSpeed = 140.0f;
         MouseSensitivity = 0.1f;
@@ -56,7 +56,7 @@ public:
         isDiving = !isDiving;
         if (isDiving) {
             // Chế độ 2: Lướt xuyên kính ra ngoài lòng nước đại dương sâu
-            targetPos = glm::vec3(240.0f, -60.0f, Position.z);
+            targetPos = glm::vec3(220.0f, 60.0f, Position.z);
             targetFov = 85.0f; // Mở rộng góc mở FOV toàn cảnh điện ảnh
         } else {
             // Chế độ 1: Lùi về giữa hành lang đường hầm khô ráo
