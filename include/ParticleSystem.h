@@ -1,8 +1,10 @@
 #pragma once
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <cstdlib>
+#include <cmath>
 #include "Shader.h"
 
 /**
@@ -22,101 +24,116 @@
 // ----------------------------------------------------------------------------------------------
 struct BubbleParticle {
     glm::vec3 Position; // Tọa độ 3D hiện tại của hạt bọt khí
+    float BaseX;        // Tọa độ X gốc để dao động lắc lư hình sin khi nổi
     float Speed;        // Vận tốc nổi thẳng đứng hướng lên mặt nước (units/giây)
     float Radius;       // Kích thước bán kính hạt bọt khí
+    float Phase;        // Pha dao động ngang riêng của từng hạt
 };
 
 class ParticleSystem {
 public:
-    std::vector<BubbleParticle> particles; // Danh sách 100 hạt bọt khí
-    unsigned int VAO, VBO;                 // Bộ đệm hình học của 1 hạt
+    std::vector<BubbleParticle> particles; // Danh sách các hạt bọt khí
+    unsigned int VAO = 0, VBO = 0;         // Bộ đệm hình học của 1 hạt
     int particleCount;                     // Tổng số lượng hạt khởi tạo
 
     // ------------------------------------------------------------------------------------------
-    // [CỤM 2: KHỞI TẠO HỆ HẠT VÀ TẠO BỘ ĐỆM ĐỈNH HÌNH VUÔNG BILLBOARD]
+    // [CỤM 2: KHỞI TẠO HỆ HẠT VÀ TẠO BỘ ĐỆM ĐỈNH HÌNH BÁT GIÁC BILLBOARD]
     // ------------------------------------------------------------------------------------------
-    ParticleSystem(int count = 100) : particleCount(count) {
-        // Khởi tạo ngẫu nhiên vị trí ban đầu cho mảng hạt
+    ParticleSystem(int count = 240) : particleCount(count) {
         for (int i = 0; i < count; ++i) {
             BubbleParticle b;
-            resetBubble(b, true); // true = Rải ngẫu nhiên độ cao Y ban đầu
+            resetBubble(b, true); // true = Rải ngẫu nhiên độ cao Y ban đầu từ 5 -> 480
             particles.push_back(b);
         }
 
-        // Tạo mảng đỉnh 1 hình vuông (Quad) gồm 2 tam giác để áp dụng kỹ thuật Billboard
-        std::vector<float> quadVerts = {
-            -1.0f, -1.0f, 0.0f,
-             1.0f, -1.0f, 0.0f,
-             1.0f,  1.0f, 0.0f,
-            -1.0f, -1.0f, 0.0f,
-             1.0f,  1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f
-        };
+        // Tạo hình đa giác tròn 8 cạnh (Octagon Fan) để hạt bọt khí tròn mượt tự nhiên hơn hình vuông
+        std::vector<float> circleVerts;
+        const int segs = 10;
+        for (int i = 0; i < segs; ++i) {
+            float a1 = 2.0f * 3.14159265f * (float)i / segs;
+            float a2 = 2.0f * 3.14159265f * (float)(i + 1) / segs;
+            // Tâm (0,0,0), pháp tuyến hướng +Z (0,0,1)
+            circleVerts.insert(circleVerts.end(), {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f});
+            circleVerts.insert(circleVerts.end(), {cosf(a1), sinf(a1), 0.0f, 0.0f, 0.0f, 1.0f});
+            circleVerts.insert(circleVerts.end(), {cosf(a2), sinf(a2), 0.0f, 0.0f, 0.0f, 1.0f});
+        }
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, quadVerts.size() * sizeof(float), quadVerts.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, circleVerts.size() * sizeof(float), circleVerts.data(), GL_STATIC_DRAW);
 
-        // aPos: Thuộc tính đỉnh vị trí X, Y, Z (location = 0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        // aPos (location = 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        // aNormal (location = 1)
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
         glBindVertexArray(0);
     }
 
+    ~ParticleSystem() {
+        if (VAO) glDeleteVertexArrays(1, &VAO);
+        if (VBO) glDeleteBuffers(1, &VBO);
+    }
+
     // ------------------------------------------------------------------------------------------
-    // [CỤM 3: CẬP NHẬT VẬN TỐC, TÁI SINH VÀ VẼ HỆ HẠT (UPDATE & RENDER)]
+    // [CỤM 3: CẬP NHẬT VẬN TỐC, TÁI SINH VÀ VẼ HỆ HẠT BILLBOARD (UPDATE & RENDER)]
     // ------------------------------------------------------------------------------------------
-    /**
-     * @brief Cập nhật tọa độ nổi Y và vẽ từng hạt bọt khí với độ trong suốt
-     */
-    void UpdateAndRender(float dt, glm::vec3 camPos, Shader& shader) {
-        // Bật chế độ hòa trộn màu Alpha Blending (Chương CG.6)
+    void UpdateAndRender(float dt, float totalTime, glm::vec3 camPos, Shader& shader) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE); // Không ghi đè Z-Buffer để không che khuất cá phía sau
+
+        shader.setBool("useTexture", false);
+        shader.setBool("isFish", false);
+        shader.setVec3("objectColor", glm::vec3(0.82f, 0.96f, 1.0f));
+        shader.setFloat("alphaVal", 0.42f);
+
         glBindVertexArray(VAO);
 
-        // Màu trắng ánh xanh lơ lấp lánh của bọt khí
-        shader.setVec3("objectColor", glm::vec3(0.75f, 0.92f, 1.0f));
-        shader.setFloat("alphaVal", 0.45f); // Độ mờ trong suốt 45%
-
         for (auto& b : particles) {
-            // 1. Cập nhật vị trí nổi lên theo thời gian: Y = Y + Speed * deltaTime
+            // 1. Nổi lên theo trục Y + lắc lư ngang theo sóng sin
             b.Position.y += b.Speed * dt;
+            b.Position.x = b.BaseX + sinf(totalTime * 2.2f + b.Phase) * 6.0f;
 
-            // 2. Cơ chế tái sinh hạt (Recycling): Khi bọt chạm mặt nước (Y > 250), đưa lại về đáy cát
-            if (b.Position.y > 250.0f) {
-                resetBubble(b, false); // false = Đặt chính xác tại đáy cát Y = -150
+            // 2. Tái sinh khi chạm mặt nước (Y > 480) -> đưa về sát đáy cát/rạn san hô (Y = 4)
+            if (b.Position.y > 480.0f) {
+                resetBubble(b, false);
             }
 
-            // 3. Ma trận mô hình (Model Matrix) dịch chuyển hạt tới vị trí và co dãn theo bán kính
+            // 3. Kỹ thuật Billboard: Xoay mặt bọt khí luôn hướng về phía Camera
+            glm::vec3 toCam = camPos - b.Position;
+            float yaw = atan2f(toCam.x, toCam.z);
+
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, b.Position);
+            model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::scale(model, glm::vec3(b.Radius));
             shader.setMat4("model", model);
 
-            // 4. Vẽ 2 tam giác tạo nên hình vuông bọt khí
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glDrawArrays(GL_TRIANGLES, 0, 30);
         }
 
         glBindVertexArray(0);
+        glDepthMask(GL_TRUE);
     }
 
 private:
     // ------------------------------------------------------------------------------------------
-    // [CỤM 4: THUẬT TOÁN TÁI SINH HẠT NGẪU NHIÊN Ở ĐÁY BIỂN (RECYCLING ALGORITHM)]
+    // [CỤM 4: THUẬT TOÁN TÁI SINH HẠT NGẪU NHIÊN NGOÀI HẦM KÍNH (RECYCLING ALGORITHM)]
     // ------------------------------------------------------------------------------------------
     void resetBubble(BubbleParticle& b, bool randomY) {
-        // Rải ngẫu nhiên hạt dọc theo khu vực có rạn san hô
-        b.Position.x = -320.0f + static_cast<float>(rand() % 640);
-        b.Position.z = -650.0f + static_cast<float>(rand() % 1300);
-        b.Position.y = randomY ? (-150.0f + static_cast<float>(rand() % 400)) : -150.0f;
-        
-        // Vận tốc nổi ngẫu nhiên từ 35 đến 70 units/giây
-        b.Speed = 35.0f + static_cast<float>(rand() % 35);
-        
-        // Bán kính ngẫu nhiên tạo độ to nhỏ sinh động
-        b.Radius = 1.2f + static_cast<float>(rand() % 3) * 0.8f;
+        // Rải bọt khí từ đáy biển & các rạn san hô 2 bên hầm (tránh bay vào bên trong hầm kính khô ráo)
+        float side = (rand() % 2 == 0) ? 1.0f : -1.0f;
+        b.BaseX = side * (185.0f + static_cast<float>(rand() % 480));
+        b.Position.x = b.BaseX;
+        b.Position.z = -850.0f + static_cast<float>(rand() % 1700);
+        b.Position.y = randomY ? (5.0f + static_cast<float>(rand() % 470)) : 5.0f;
+
+        b.Speed = 28.0f + static_cast<float>(rand() % 38);
+        b.Radius = 1.6f + static_cast<float>(rand() % 4) * 0.75f;
+        b.Phase = static_cast<float>(rand() % 628) * 0.01f;
     }
 };

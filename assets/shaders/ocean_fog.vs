@@ -16,7 +16,7 @@
 // ----------------------------------------------------------------------------------------------
 // [CỤM 1: CÁC THUỘC TÍNH ĐỈNH ĐẦU VÀO TỪ VBO (VERTEX ATTRIBUTES)]
 // ----------------------------------------------------------------------------------------------
-layout (location = 0) in vec3 aPos;       // Vị trí đỉnh cục bộ (x, y, z)
+layout (location = 0) in vec3 aPos;       // Vị trí đỉnh cục bộ (đã chuẩn hóa trong [-0.5, 0.5])
 layout (location = 1) in vec3 aNormal;    // Vector pháp tuyến đỉnh cục bộ (nx, ny, nz)
 layout (location = 2) in vec2 aTexCoords; // Tọa độ vân bề mặt (u, v)
 
@@ -35,32 +35,26 @@ uniform mat4 view;       // Ma trận quan sát Camera (LookAt)
 uniform mat4 projection; // Ma trận chiếu phối cảnh (Perspective Projection)
 uniform float time;      // Biến thời gian thực để tạo dao động sinh học
 uniform bool isFish;     // Cờ: true = Áp dụng hiệu ứng uốn đuôi cá; false = Vật thể tĩnh
+uniform float fishPhase; // Pha bơi riêng của từng con cá để đàn cá không vẫy đuôi đồng loạt
 
 void main() {
     vec3 pos = aPos;
-    
+
     // ------------------------------------------------------------------------------------------
     // [CỤM 4: HIỆU ỨNG DAO ĐỘNG UỐN ĐUÔI CÁ THEO HÀM SIN (CHƯƠNG CG.3)]
     // ------------------------------------------------------------------------------------------
-    // Nếu là loài cá và phần thân nằm về phía đuôi (trục z < -2.0), tạo dao động lắc lư theo trục X
-    if (isFish && pos.z < -2.0) {
-        float wag = sin(time * 5.5 - pos.z * 0.1) * 0.06 * (-pos.z);
-        pos.x += wag; // Uốn cong thân cá sang trái/phải
+    // Trên mô hình đã chuẩn hóa ([-0.5, 0.5]), phần thân sau & đuôi nằm ở nửa Z âm.
+    if (isFish && pos.z < 0.05) {
+        float tailFactor = clamp((0.05 - pos.z) * 1.8, 0.0, 1.0);
+        float wag = sin(time * 6.5 + fishPhase - pos.z * 6.0) * 0.085 * tailFactor;
+        pos.x += wag; // Uốn cong thân & đuôi cá sang trái/phải tự nhiên
     }
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 5: CHUỖI BIẾN ĐỔI MA TRẬN KHÔNG GIAN (MVP TRANSFORMATION)]
     // ------------------------------------------------------------------------------------------
-    // 1. Tính tọa độ điểm ảnh trong Thế giới: FragPos = Model * vec4(pos, 1.0)
     FragPos = vec3(model * vec4(pos, 1.0));
-
-    // 2. Tính Vector pháp tuyến trong Thế giới bằng Ma trận chuyển vị nghịch đảo (Normal Matrix)
-    // Giúp bảo toàn tính trực giao góc 90 độ khi vật thể bị co dãn không đồng đều (Non-uniform scale)
     Normal = mat3(transpose(inverse(model))) * aNormal;
-
-    // 3. Chuyển tiếp tọa độ UV
     TexCoords = aTexCoords;
-
-    // 4. Tọa độ đỉnh cuối cùng trong Không gian Cắt đồng nhất (Clip Space):
     gl_Position = projection * view * vec4(FragPos, 1.0);
 }

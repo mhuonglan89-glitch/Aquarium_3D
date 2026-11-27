@@ -48,17 +48,17 @@ public:
     /**
      * @brief Constructor khởi tạo camera tại lối đi giữa sàn đường hầm
      */
-    Camera(glm::vec3 startPos = glm::vec3(0.0f, 35.0f, -200.0f)) {
+    Camera(glm::vec3 startPos = glm::vec3(0.0f, 38.0f, -350.0f)) {
         Position = startPos;
         targetPos = startPos;
         WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
         Yaw = 90.0f; // Nhìn dọc theo đường hầm (hướng về phía +Z)
-        Pitch = 0.0f;
+        Pitch = 8.0f; // Ngước nhẹ lên vòm kính để thấy ngay đàn cá bơi phía trên
         Front = glm::vec3(0.0f, 0.0f, 1.0f);
-        MovementSpeed = 140.0f;
+        MovementSpeed = 160.0f;
         MouseSensitivity = 0.1f;
-        Fov = 60.0f;
-        targetFov = 60.0f;
+        Fov = 65.0f;
+        targetFov = 65.0f;
         updateCameraVectors();
     }
 
@@ -83,13 +83,13 @@ public:
         isDiving = !isDiving; // Đảo cờ trạng thái
 
         if (isDiving) {
-            // CHẾ ĐỘ 2: Đẩy tọa độ mục tiêu xuyên qua nóc kính ra lòng nước biển sâu
-            targetPos = glm::vec3(240.0f, -60.0f, Position.z);
+            // CHẾ ĐỘ 2: Đẩy tọa độ mục tiêu xuyên qua vách kính ra vùng nước mở phía trên đáy biển (Y > 0)
+            targetPos = glm::vec3(260.0f, 110.0f, glm::clamp(Position.z, -700.0f, 700.0f));
             targetFov = 85.0f; // Mở rộng FOV điện ảnh choáng ngợp
         } else {
-            // CHẾ ĐỘ 1: Lùi về giữa lối đi sàn hầm khô ráo
-            targetPos = glm::vec3(0.0f, 35.0f, Position.z);
-            targetFov = 60.0f; // Trả lại góc nhìn tiêu chuẩn trong nhà
+            // CHẾ ĐỘ 1: Lùi về giữa lối đi sàn hầm khô ráo (giới hạn trong chiều dài hầm)
+            targetPos = glm::vec3(0.0f, 38.0f, glm::clamp(Position.z, -680.0f, 680.0f));
+            targetFov = 65.0f; // Trả lại góc nhìn tiêu chuẩn trong đường hầm
         }
     }
 
@@ -131,6 +131,10 @@ public:
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetPos += Right * velocity;
             if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) targetPos.y += velocity; // Phím E: Bơi ngoi lên
             if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) targetPos.y -= velocity; // Phím Q: Lặn sâu xuống
+
+            // Không để người lặn chui xuống dưới đáy cát (Y >= 15) hoặc bay ra khỏi mặt nước (Y <= 520)
+            if (targetPos.y < 15.0f)  targetPos.y = 15.0f;
+            if (targetPos.y > 520.0f) targetPos.y = 520.0f;
         }
 
         // Bắt sự kiện phím SPACE (Chống dội phím: chỉ kích hoạt 1 lần duy nhất mỗi lần bấm)

@@ -94,12 +94,12 @@ void main() {
     // Định luật hấp thụ quang học: fogFactor = exp(-density * distance)
     // distance: Khoảng cách từ mắt nhìn (Camera) tới điểm ảnh
     float distance = length(viewPos - FragPos);
-    float fogDensity = 0.00095; // Mật độ hạt lơ lửng trong nước trong vắt (nhìn xa không bị đen)
+    float fogDensity = 0.00052; // Mật độ hạt lơ lửng trong nước biển nhiệt đới trong xanh (nhìn xa rõ cá)
     float fogFactor = exp(-fogDensity * distance);
     fogFactor = clamp(fogFactor, 0.0, 1.0);
 
-    // Bảng màu đại dương chuẩn hệ thống: Màu xanh ngọc nhiệt đới (#044a63 / #068da9)
-    vec3 tropicalOceanCyan = vec3(0.04, 0.42, 0.58);
+    // Bảng màu đại dương chuẩn hệ thống: Màu xanh ngọc nhiệt đới (#045a78)
+    vec3 tropicalOceanCyan = vec3(0.03, 0.44, 0.60);
     
     // Hàm mix(A, B, t) = A*(1-t) + B*t: Càng ở xa, màu sắc càng hòa tan vào màu xanh nước biển
     vec3 finalColor = mix(tropicalOceanCyan, lightedColor, fogFactor);

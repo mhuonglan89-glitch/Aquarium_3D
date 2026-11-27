@@ -49,14 +49,14 @@ public:
         // Bước 1: Sinh lưới vòm kính nửa hình trụ tham số
         generateGlassArch(radius, length, segments, stepsZ);
 
-        // Bước 2: Sinh mặt phẳng sàn đi bộ bằng đá mài
-        generateFloor(radius * 0.75f, length, stepsZ);
+        // Bước 2: Sinh mặt phẳng sàn đi bộ bằng đá mài (khít với chân vòm kính bán kính R)
+        generateFloor(radius, length, stepsZ);
 
         // Bước 3: Sinh các dầm thép chịu lực cách nhau mỗi 100 units
         generateSteelBeams(radius, length, segments, 100.0f);
 
-        // Bước 4: Sinh 2 dải đèn LED cyan chạy dọc mép sàn
-        generateLedStrips(radius * 0.73f, length, stepsZ);
+        // Bước 4: Sinh 2 dải đèn LED cyan chạy dọc mép lối đi
+        generateLedStrips(radius * 0.78f, length, stepsZ);
     }
 
     /**
@@ -77,6 +77,9 @@ public:
      * @rule Bất biến trong đồ họa: Vẽ vật thể ĐẶC trước -> Vẽ vật thể TRONG SUỐT sau cùng!
      */
     void Draw(Shader& shader) {
+        shader.setBool("useTexture", false);
+        shader.setBool("isFish", false);
+
         // --- 1. VẼ SÀN HẦM ĐI BỘ (Vật thể đặc) ---
         shader.setVec3("objectColor", glm::vec3(0.08f, 0.12f, 0.18f)); // Màu đá mài Titanium Steel
         shader.setFloat("alphaVal", 1.0f);                              // Hoàn toàn không trong suốt
@@ -101,8 +104,8 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Công thức: C = C_src*alpha + C_dst*(1-alpha)
         glDepthMask(GL_FALSE);                             // TẠM DỪNG GHI ĐỘ SÂU để không che mất cá bơi phía sau kính!
         
-        shader.setVec3("objectColor", glm::vec3(0.25f, 0.65f, 0.85f)); // Màu phản quang xanh lơ nhẹ của kính
-        shader.setFloat("alphaVal", 0.28f);                             // Kính có độ trong suốt 28%
+        shader.setVec3("objectColor", glm::vec3(0.35f, 0.78f, 0.95f)); // Màu phản quang xanh lơ nhẹ của kính
+        shader.setFloat("alphaVal", 0.18f);                             // Kính trong suốt cao (18% mờ) giúp nhìn rõ cá bên ngoài
         glBindVertexArray(VAO_Glass);
         glDrawArrays(GL_TRIANGLES, 0, glassVertexCount);
 

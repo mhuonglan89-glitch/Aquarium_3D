@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <vector>
 #include <cmath>
 
 /**
@@ -118,5 +119,74 @@ public:
      */
     static float CalculateTailWag(float time, float speed = 6.0f, float amplitudeDeg = 18.0f) {
         return sin(time * speed) * glm::radians(amplitudeDeg);
+    }
+};
+
+// ----------------------------------------------------------------------------------------------
+// [CỤM 7: ĐƯỜNG CONG KHÉP KÍN CATMULL-ROM SPLINE 3D (CHƯƠNG CG.5 - QUỸ ĐẠO TUẦN TRA VÔ HẠN)]
+// ----------------------------------------------------------------------------------------------
+/**
+ * @brief Cho phép cá bơi tuần tra khép kín qua N điểm kiểm soát P0 -> P1 -> ... -> Pn -> P0
+ *        mà không bị giật cục khi quay lại điểm xuất phát (đảm bảo liên tục C1 tại điểm nối).
+ */
+class ClosedSplinePath {
+public:
+    std::vector<glm::vec3> points;
+
+    ClosedSplinePath(const std::vector<glm::vec3>& pts) : points(pts) {}
+
+    glm::vec3 GetPoint(float t) const {
+        if (points.size() < 4) return glm::vec3(0.0f);
+        t = t - std::floor(t); // Giữ t trong [0, 1)
+        int n = static_cast<int>(points.size());
+        float scaled = t * n;
+        int idx = static_cast<int>(scaled) % n;
+        float u = scaled - std::floor(scaled);
+
+        const glm::vec3& p0 = points[(idx - 1 + n) % n];
+        const glm::vec3& p1 = points[idx];
+        const glm::vec3& p2 = points[(idx + 1) % n];
+        const glm::vec3& p3 = points[(idx + 2) % n];
+
+        float u2 = u * u;
+        float u3 = u2 * u;
+
+        return 0.5f * ((2.0f * p1) +
+                       (-p0 + p2) * u +
+                       (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * u2 +
+                       (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * u3);
+    }
+
+    glm::vec3 GetTangent(float t) const {
+        if (points.size() < 4) return glm::vec3(0.0f, 0.0f, 1.0f);
+        t = t - std::floor(t);
+        int n = static_cast<int>(points.size());
+        float scaled = t * n;
+        int idx = static_cast<int>(scaled) % n;
+        float u = scaled - std::floor(scaled);
+
+        const glm::vec3& p0 = points[(idx - 1 + n) % n];
+        const glm::vec3& p1 = points[idx];
+        const glm::vec3& p2 = points[(idx + 1) % n];
+        const glm::vec3& p3 = points[(idx + 2) % n];
+
+        float u2 = u * u;
+        glm::vec3 d = 0.5f * ((-p0 + p2) +
+                              2.0f * (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * u +
+                              3.0f * (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * u2);
+
+        if (glm::length(d) < 1e-5f) return glm::vec3(0.0f, 0.0f, 1.0f);
+        return glm::normalize(d);
+    }
+
+    float GetFacingAngle(float t) const {
+        glm::vec3 tangent = GetTangent(t);
+        return atan2(tangent.x, tangent.z);
+    }
+
+    float GetPitchAngle(float t) const {
+        glm::vec3 tangent = GetTangent(t);
+        float horizLen = std::sqrt(tangent.x * tangent.x + tangent.z * tangent.z);
+        return atan2(-tangent.y, horizLen);
     }
 };

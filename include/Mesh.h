@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
+#include "Shader.h"
 
 /**
  * ==============================================================================================
@@ -30,14 +31,20 @@ class Mesh {
 public:
     std::vector<Vertex>       vertices; // Mảng danh sách các đỉnh của vật thể
     std::vector<unsigned int> indices;  // Mảng chỉ số đỉnh (Index Buffer) ghép thành các mặt tam giác
-    unsigned int VAO;                   // ID quản lý cấu hình đỉnh của Mesh
+    unsigned int VAO = 0;               // ID quản lý cấu hình đỉnh của Mesh
+
+    // Thuộc tính vật liệu riêng cho từng Mesh (hữu ích cho model .glb nhiều chất liệu)
+    unsigned int textureID = 0;
+    bool hasTexture = false;
+    glm::vec3 materialColor = glm::vec3(-1.0f); // (-1) nghĩa là dùng màu mặc định của Model
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 2: CONSTRUCTOR KHỞI TẠO VÀ CẤU HÌNH BỘ ĐỆM ĐỒ HỌA TRÊN GPU]
     // ------------------------------------------------------------------------------------------
-    Mesh(std::vector<Vertex> verts, std::vector<unsigned int> inds) {
-        this->vertices = verts;
-        this->indices = inds;
+    Mesh(std::vector<Vertex> verts, std::vector<unsigned int> inds,
+         unsigned int texId = 0, bool useTex = false, glm::vec3 matColor = glm::vec3(-1.0f))
+        : vertices(std::move(verts)), indices(std::move(inds)),
+          textureID(texId), hasTexture(useTex), materialColor(matColor) {
         setupMesh(); // Gửi dữ liệu lên GPU
     }
 
@@ -45,11 +52,32 @@ public:
     // [CỤM 3: HÀM VẼ MESH (DRAW CALL ĐỒ HỌA)]
     // ------------------------------------------------------------------------------------------
     /**
-     * @brief Kích hoạt VAO và gửi lệnh vẽ tới GPU
+     * @brief Kích hoạt VAO, thiết lập Texture/Vật liệu riêng (nếu có) và gửi lệnh vẽ tới GPU
      * @explanation Nếu có mảng chỉ số EBO -> dùng glDrawElements (tiết kiệm bộ nhớ đỉnh).
      *              Nếu không có EBO -> dùng glDrawArrays.
      */
-    void Draw(class Shader& shader) const {
+    void Draw(Shader& shader, unsigned int fallbackTexID = 0, bool fallbackHasTex = false,
+              const glm::vec3& fallbackColor = glm::vec3(1.0f)) const {
+        if (hasTexture && textureID != 0) {
+            shader.setBool("useTexture", true);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureID);
+            shader.setInt("texture_diffuse1", 0);
+        } else if (fallbackHasTex && fallbackTexID != 0) {
+            shader.setBool("useTexture", true);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, fallbackTexID);
+            shader.setInt("texture_diffuse1", 0);
+        } else {
+            shader.setBool("useTexture", false);
+        }
+
+        if (materialColor.x >= 0.0f) {
+            shader.setVec3("objectColor", materialColor);
+        } else {
+            shader.setVec3("objectColor", fallbackColor);
+        }
+
         glBindVertexArray(VAO);
         if (!indices.empty()) {
             glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
@@ -60,12 +88,14 @@ public:
     }
 
 private:
-    unsigned int VBO, EBO; // Bộ đệm đỉnh và bộ đệm chỉ số
+    unsigned int VBO = 0, EBO = 0; // Bộ đệm đỉnh và bộ đệm chỉ số
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 4: CẤU HÌNH ĐỊNH DẠNG ĐỈNH (VERTEX ATTRIBUTE POINTERS - CHƯƠNG CG.2)]
     // ------------------------------------------------------------------------------------------
     void setupMesh() {
+        if (vertices.empty()) return;
+
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
 
