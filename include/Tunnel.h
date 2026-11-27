@@ -44,42 +44,42 @@ public:
     float Radius;
     float Length;
 
-    Tunnel(float radius = 110.0f, float length = 1600.0f)
+    Tunnel(float radius = 128.0f, float length = 1600.0f)
         : Radius(radius), Length(length) {
         loadFloorTexture("assets/textures/floor_diffuse.jpg");
 
         std::vector<float> glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts;
 
-        // 1. ĐẠI SẢNH QUAN SÁT TRUNG TÂM 360° tại (0, 0) - Bán kính 220, Mái vòm cao 220
+        // 1. ĐẠI SẢNH QUAN SÁT TRUNG TÂM 360° tại (0, 0) - Bán kính 220, Tường kính cao 128 khớp khít với vòm hành lang!
         buildCentralRotunda(0.0f, 0.0f, 220.0f, radius,
                             glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
 
-        // 2. NHÁNH NAM (Lối vào chính): (0, -680) -> (0, -210)
-        buildCorridor(glm::vec2(0.0f, -680.0f), glm::vec2(0.0f, -210.0f), radius, true, false,
+        // 2. NHÁNH NAM (Lối vào chính): (0, -680) -> (0, -195) (nối sâu vào viền sảnh cho khít)
+        buildCorridor(glm::vec2(0.0f, -680.0f), glm::vec2(0.0f, -195.0f), radius, true, false,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
 
-        // 3. NHÁNH BẮC -> RẼ PHẢI (Hẻm Cá Mập): (0, 210) -> (0, 680) -> (480, 680)
-        buildCorridor(glm::vec2(0.0f, 210.0f), glm::vec2(0.0f, 575.0f), radius, false, false,
+        // 3. NHÁNH BẮC -> RẼ PHẢI (Hẻm Cá Mập): (0, 195) -> (0, 680) -> (480, 680)
+        buildCorridor(glm::vec2(0.0f, 195.0f), glm::vec2(0.0f, 560.0f), radius, false, false,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
-        buildCornerHub(0.0f, 680.0f, radius, -1.0f, 1.0f, // Mở hướng -Z và +X
+        buildCornerHub(0.0f, 680.0f, radius, -1.0f, 1.0f,
                        glassVerts, floorVerts, curbVerts, beamVerts, ledVerts);
-        buildCorridor(glm::vec2(105.0f, 680.0f), glm::vec2(480.0f, 680.0f), radius, false, true,
+        buildCorridor(glm::vec2(120.0f, 680.0f), glm::vec2(480.0f, 680.0f), radius, false, true,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
 
-        // 4. NHÁNH TÂY -> RẼ TRÁI (Vườn San Hô): (-210, 0) -> (-640, 0) -> (-640, -480)
-        buildCorridor(glm::vec2(-210.0f, 0.0f), glm::vec2(-535.0f, 0.0f), radius, false, false,
+        // 4. NHÁNH TÂY -> RẼ TRÁI (Vườn San Hô): (-195, 0) -> (-640, 0) -> (-640, -480)
+        buildCorridor(glm::vec2(-195.0f, 0.0f), glm::vec2(-520.0f, 0.0f), radius, false, false,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
-        buildCornerHub(-640.0f, 0.0f, radius, 1.0f, -1.0f, // Mở hướng +X và -Z
+        buildCornerHub(-640.0f, 0.0f, radius, 1.0f, -1.0f,
                        glassVerts, floorVerts, curbVerts, beamVerts, ledVerts);
-        buildCorridor(glm::vec2(-640.0f, -105.0f), glm::vec2(-640.0f, -480.0f), radius, false, true,
+        buildCorridor(glm::vec2(-640.0f, -120.0f), glm::vec2(-640.0f, -480.0f), radius, false, true,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
 
-        // 5. NHÁNH ĐÔNG -> RẼ PHẢI (Rừng Sứa Phát Sáng): (210, 0) -> (640, 0) -> (640, -460)
-        buildCorridor(glm::vec2(210.0f, 0.0f), glm::vec2(535.0f, 0.0f), radius, false, false,
+        // 5. NHÁNH ĐÔNG -> RẼ PHẢI (Rừng Sứa Phát Sáng): (195, 0) -> (640, 0) -> (640, -460)
+        buildCorridor(glm::vec2(195.0f, 0.0f), glm::vec2(520.0f, 0.0f), radius, false, false,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
-        buildCornerHub(640.0f, 0.0f, radius, -1.0f, -1.0f, // Mở hướng -X và -Z
+        buildCornerHub(640.0f, 0.0f, radius, -1.0f, -1.0f,
                        glassVerts, floorVerts, curbVerts, beamVerts, ledVerts);
-        buildCorridor(glm::vec2(640.0f, -105.0f), glm::vec2(640.0f, -460.0f), radius, false, true,
+        buildCorridor(glm::vec2(640.0f, -120.0f), glm::vec2(640.0f, -460.0f), radius, false, true,
                       glassVerts, floorVerts, curbVerts, beamVerts, ledVerts, kioskVerts);
 
         glassVertexCount = static_cast<int>(glassVerts.size() / 8);
@@ -161,9 +161,9 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDepthMask(GL_FALSE);
 
-        shader.setFloat("causticStrength", 0.35f);
-        shader.setVec3("objectColor", glm::vec3(0.32f, 0.78f, 0.96f));
-        shader.setFloat("alphaVal", 0.16f);
+        shader.setFloat("causticStrength", 0.25f);
+        shader.setVec3("objectColor", glm::vec3(0.35f, 0.80f, 0.96f));
+        shader.setFloat("alphaVal", 0.11f); // Kính trong suốt cao (11%) giúp quan sát cá cực rõ!
         glBindVertexArray(VAO_Glass);
         glDrawArrays(GL_TRIANGLES, 0, glassVertexCount);
 
@@ -227,7 +227,7 @@ private:
                              std::vector<float>& leds,  std::vector<float>& kiosks) {
         const int segs = 48;
         const int domeRings = 10;
-        const float wallH = 115.0f;
+        const float wallH = tunnelR; // Khớp chiều cao bằng đúng đỉnh vòm hành lang (128)
 
         // Sàn tròn trung tâm + Vòng LED phát sáng bao quanh đảo trung tâm
         for (int i = 0; i < segs; ++i) {
@@ -286,11 +286,30 @@ private:
             }
         }
 
-        // 8 Cột thép chịu lực bao quanh Đại Sảnh & Vòng dầm thép trên cao (Y = wallH)
-        for (int k = 0; k < 8; ++k) {
-            float ang = (2.0f * 3.14159265f * k) / 8.0f + 0.3927f; // Xoay lệch 22.5 độ để không chắn cửa
+        // 4 Cột thép chịu lực đặt tại đúng 4 góc chéo 45°, 135°, 225°, 315° (KHÔNG BAO GIỜ chắn cửa vòm!)
+        for (int k = 0; k < 4; ++k) {
+            float ang = 0.785398f + k * 1.570796f;
             addBox(beams, glm::vec3(cx + R * cosf(ang), wallH * 0.5f, cz + R * sinf(ang)),
-                   glm::vec3(4.5f, wallH * 0.5f, 4.5f));
+                   glm::vec3(5.0f, wallH * 0.5f, 5.0f));
+        }
+
+        // Vòng dầm thép tròn 3D trên cao (Y = wallH) đỡ mái vòm trung tâm
+        for (int i = 0; i < segs; ++i) {
+            float a1 = 2.0f * 3.14159265f * (float)i / segs;
+            float a2 = 2.0f * 3.14159265f * (float)(i + 1) / segs;
+            float rIn = R - 3.5f, rOut = R + 3.5f, yB = wallH - 3.0f, yT = wallH + 3.0f;
+            glm::vec3 i1(cx + rIn * cosf(a1), yB, cz + rIn * sinf(a1));
+            glm::vec3 i2(cx + rIn * cosf(a2), yB, cz + rIn * sinf(a2));
+            glm::vec3 i3(cx + rIn * cosf(a1), yT, cz + rIn * sinf(a1));
+            glm::vec3 i4(cx + rIn * cosf(a2), yT, cz + rIn * sinf(a2));
+            glm::vec3 o1(cx + rOut * cosf(a1), yB, cz + rOut * sinf(a1));
+            glm::vec3 o2(cx + rOut * cosf(a2), yB, cz + rOut * sinf(a2));
+            glm::vec3 o3(cx + rOut * cosf(a1), yT, cz + rOut * sinf(a1));
+            glm::vec3 o4(cx + rOut * cosf(a2), yT, cz + rOut * sinf(a2));
+            pushFlatTri(beams, i1, i3, i2); pushFlatTri(beams, i2, i3, i4);
+            pushFlatTri(beams, o1, o2, o3); pushFlatTri(beams, o2, o4, o3);
+            pushFlatTri(beams, i3, o3, i4); pushFlatTri(beams, i4, o3, o4);
+            pushFlatTri(beams, i1, i2, o1); pushFlatTri(beams, i2, o2, o1);
         }
 
         // Mái vòm bán cầu kính trên đỉnh Đại Sảnh (từ Y = wallH lên Y = wallH + 115)
@@ -388,11 +407,16 @@ private:
             glm::vec3 r3 = fPt(walkW - ledW, 0.3f, d2), r4 = fPt(walkW, 0.3f, d2);
             pushFlatTri(leds, r1, r2, r3); pushFlatTri(leds, r2, r4, r3);
 
-            // 2 bờ gờ hai bên
+            // 2 bờ gờ bê tông đặc hai bên (có cả mặt đứng y=0..8 lẫn mặt trên)
+            glm::vec3 cL0 = fPt(-walkW, 0, d1), cL0b = fPt(-walkW, 0, d2);
             glm::vec3 cL1 = fPt(-r, 8, d1), cL2 = fPt(-walkW, 8, d1), cL3 = fPt(-r, 8, d2), cL4 = fPt(-walkW, 8, d2);
-            pushFlatTri(curbs, cL1, cL2, cL3); pushFlatTri(curbs, cL2, cL4, cL3);
+            pushFlatTri(curbs, cL0, cL2, cL0b); pushFlatTri(curbs, cL2, cL4, cL0b);
+            pushFlatTri(curbs, cL1, cL2, cL3);  pushFlatTri(curbs, cL2, cL4, cL3);
+
+            glm::vec3 cR0 = fPt(walkW, 0, d1), cR0b = fPt(walkW, 0, d2);
             glm::vec3 cR1 = fPt(walkW, 8, d1), cR2 = fPt(r, 8, d1), cR3 = fPt(walkW, 8, d2), cR4 = fPt(r, 8, d2);
-            pushFlatTri(curbs, cR1, cR2, cR3); pushFlatTri(curbs, cR2, cR4, cR3);
+            pushFlatTri(curbs, cR0, cR0b, cR1); pushFlatTri(curbs, cR1, cR0b, cR3);
+            pushFlatTri(curbs, cR1, cR2, cR3);  pushFlatTri(curbs, cR2, cR4, cR3);
         }
 
         // 3. Khung dầm thép 3D chịu lực uốn cong dọc hành lang

@@ -121,7 +121,7 @@ Mesh createWaterSurfaceMesh() {
             float x = -half + ix * step;
             float z = -half + iz * step;
             Vertex v;
-            v.Position = glm::vec3(x, 530.0f, z);
+            v.Position = glm::vec3(x, 640.0f, z);
             v.Normal = glm::vec3(0.0f, -1.0f, 0.0f);
             v.TexCoords = glm::vec2(x * 0.01f, z * 0.01f);
             verts.push_back(v);
@@ -268,36 +268,36 @@ int main() {
     // ------------------------------------------------------------------------------------------
     // 🟢 BƯỚC 3: HẦM KÍNH ACRYLIC & CÁC QUỸ ĐẠO TUẦN TRA KHÉP KÍN RỘNG KHẮP BIỂN (BẠN A)
     // ------------------------------------------------------------------------------------------
-    Tunnel glassTunnel(110.0f, 1600.0f);
+    Tunnel glassTunnel(128.0f, 1600.0f);
 
-    // 3.1. Quỹ đạo Cá voi khổng lồ (Vòng tuần tra đại dương rộng lớn tầng cao)
+    // 3.1. Quỹ đạo Cá voi khổng lồ (Bơi ở tầng nước trung-cao dễ quan sát từ Đại Sảnh)
     ClosedSplinePath whalePath({
-        glm::vec3(-620.0f, 310.0f, -650.0f),
-        glm::vec3(   0.0f, 340.0f, -850.0f),
-        glm::vec3( 620.0f, 300.0f, -450.0f),
-        glm::vec3( 580.0f, 270.0f,  550.0f),
-        glm::vec3(   0.0f, 320.0f,  880.0f),
-        glm::vec3(-600.0f, 290.0f,  450.0f)
+        glm::vec3(-560.0f, 235.0f, -550.0f),
+        glm::vec3(   0.0f, 285.0f, -650.0f),
+        glm::vec3( 560.0f, 240.0f, -380.0f),
+        glm::vec3( 520.0f, 225.0f,  480.0f),
+        glm::vec3(   0.0f, 275.0f,  680.0f),
+        glm::vec3(-540.0f, 235.0f,  420.0f)
     });
 
-    // 3.2. Quỹ đạo Cá mập voi & Cá mập trắng (Lượn sát trên nóc hầm kính & 2 bên vách kính)
+    // 3.2. Quỹ đạo Cá mập voi & Cá mập trắng (Bơi ngang tầm mắt ngay bên ngoài kính Đại Sảnh & Hành lang)
     ClosedSplinePath whaleSharkPath({
-        glm::vec3(-340.0f, 140.0f, -550.0f),
-        glm::vec3( -90.0f, 235.0f, -150.0f), // Vượt ngang nóc kính để khách trong hầm ngước thấy!
-        glm::vec3( 320.0f, 130.0f,  250.0f),
-        glm::vec3( 380.0f, 110.0f,  720.0f),
-        glm::vec3(   0.0f, 245.0f,  520.0f),
-        glm::vec3(-390.0f, 125.0f,   80.0f)
+        glm::vec3(-340.0f,  95.0f, -360.0f),
+        glm::vec3(-290.0f, 115.0f,  290.0f),
+        glm::vec3(   0.0f, 235.0f,  340.0f),
+        glm::vec3( 330.0f,  95.0f,  310.0f),
+        glm::vec3( 350.0f, 105.0f, -310.0f),
+        glm::vec3(   0.0f, 245.0f, -320.0f)
     });
 
-    // 3.3. Quỹ đạo Số 8 Cá mập đại dương
+    // 3.3. Quỹ đạo Số 8 Cá mập đại dương (Ngang tầm mắt Y = 70..180)
     ClosedSplinePath sharkPatrolPath({
-        glm::vec3( 360.0f, 115.0f, -620.0f),
-        glm::vec3(  60.0f, 225.0f, -200.0f),
-        glm::vec3(-350.0f, 120.0f,  320.0f),
-        glm::vec3(-420.0f, 150.0f,  750.0f),
-        glm::vec3( 120.0f, 230.0f,  380.0f),
-        glm::vec3( 440.0f,  95.0f,  -80.0f)
+        glm::vec3( 340.0f,  85.0f, -450.0f),
+        glm::vec3(   0.0f, 210.0f, -280.0f),
+        glm::vec3(-360.0f,  90.0f,  320.0f),
+        glm::vec3(-390.0f, 110.0f,  520.0f),
+        glm::vec3( 120.0f, 215.0f,  330.0f),
+        glm::vec3( 410.0f,  85.0f, -180.0f)
     });
 
     // 3.4. Quỹ đạo Cá đuối đốm & Cá đuối Manta (Lướt uốn lượn quanh Đại Sảnh Trung Tâm & các nhánh mê cung)
@@ -591,9 +591,9 @@ int main() {
             oceanShader.setMat4("model", modelSurf);
             oceanShader.setBool("isFish", false);
             oceanShader.setBool("useTexture", false);
-            oceanShader.setFloat("causticStrength", 1.4f);
+            oceanShader.setFloat("causticStrength", 0.9f);
             oceanShader.setVec3("objectColor", glm::vec3(0.22f, 0.78f, 0.96f));
-            oceanShader.setFloat("alphaVal", 0.55f);
+            oceanShader.setFloat("alphaVal", 0.35f);
             waterSurfaceMesh.Draw(oceanShader, 0, false, glm::vec3(0.22f, 0.78f, 0.96f));
             glDepthMask(GL_TRUE);
         }

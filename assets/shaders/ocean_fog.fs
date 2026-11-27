@@ -52,12 +52,17 @@ void main() {
     vec3 specular = 0.55 * spec * sunColor;
 
     // ------------------------------------------------------------------------------------------
-    // [CỤM 3: GỢN SÓNG KHÚC XẠ ÁNH NẮNG NƯỚC ĐỘNG (DYNAMIC CAUSTICS)]
+    // [CỤM 3: GỢN SÓNG KHÚC XẠ ÁNH NẮNG NƯỚC ĐỘNG (ORGANIC MULTI-WAVE CAUSTICS)]
     // ------------------------------------------------------------------------------------------
-    float c1 = sin(FragPos.x * 0.045 + time * 2.0) * cos(FragPos.z * 0.045 + time * 1.6);
-    float c2 = sin(FragPos.x * 0.085 - time * 1.4) * cos(FragPos.z * 0.085 + time * 2.3);
-    float causticIntensity = clamp((c1 + c2) * 0.5 + 0.15, 0.0, 1.0);
-    vec3 causticColor = vec3(0.32, 0.85, 0.98) * causticIntensity * 0.42 * causticStrength;
+    // Dùng 3 hướng sóng xoay chéo góc (không vuông góc X/Z) để loại bỏ hoàn toàn ô caro lưới nhân tạo
+    float p1 = FragPos.x * 0.032 + FragPos.z * 0.024;
+    float p2 = FragPos.x * -0.021 + FragPos.z * 0.039;
+    float p3 = FragPos.x * 0.015 - FragPos.z * 0.029;
+    float w1 = sin(p1 + time * 1.9);
+    float w2 = sin(p2 - time * 1.5);
+    float w3 = cos(p3 + time * 2.2);
+    float causticIntensity = pow(clamp((w1 + w2 + w3) * 0.25 + 0.42, 0.0, 1.0), 2.2);
+    vec3 causticColor = vec3(0.32, 0.86, 0.98) * causticIntensity * 0.45 * causticStrength;
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 4: HÒA TRỘN MÀU VẬT THỂ & HIỆU ỨNG VIỀN KÍNH FRESNEL]
