@@ -1,85 +1,59 @@
-# 🌊 ĐỒ ÁN ĐỒ HỌA MÁY TÍNH: MÔ PHỎNG THỦY CUNG 3D TƯƠNG TÁC
-**Học phần:** Đồ họa máy tính (Computer Graphics)  
-**Quy mô:** Nhóm 2 sinh viên (Bạn A & Bạn B)  
-**Nền tảng công nghệ:** C++11 / Modern OpenGL (GLAD, GLFW 3.4, GLM, stb_image) & WebGL 3D (Three.js / GSAP)  
-**Thư mục dự án:** `C:\Exercise\DHMT\Aquarium_3D`
+Aquarium OpenGL Dev-C++ project
+================================
 
----
+Project folder: D:\Aquarium_OpenGL
+IDE: Dev-C++ 5.11 with TDM-GCC 4.9.2 64-bit
+Output: Aquarium_OpenGL_DemoControls_MemberB.exe
 
-## 🚀 HƯỚNG DẪN KHỞI CHẠY NHANH (QUICK START)
+Open Aquarium_OpenGL_DevCpp_Starter.dev in Dev-C++ and press F9 (Compile & Run).
+Makefile.win builds the integrated Member A and Member B source files. Close the
+aquarium window before rebuilding the EXE.
 
-### 1. Chạy Ứng Dụng C++ OpenGL Desktop (.exe)
-* **Cách nhanh nhất:** Nhấp đúp chuột vào file `run.bat` (hoặc mở Terminal gõ `.\Aquarium_3D.exe`).
-* **Biên dịch lại từ mã nguồn:** Nhấp đúp vào `build_mingw.bat` (sử dụng trình biên dịch MinGW g++ 64-bit đi kèm dự án).
+Controls
+--------
+W/A/S/D: move through the aquarium
+Mouse: look around
+Q/E: move down/up
+Space: smoothly pass through the front glass and return
+F: toggle exponential underwater fog
+C: toggle animated caustics
+Escape: close
 
-### 2. Chạy Bản Mô Phỏng WebGL 3D Trực Tiếp Trên Trình Duyệt
-* Nhấp đúp mở file `aquarium_tunnel_walkthrough.html` hoặc `index.html` trên bất kỳ trình duyệt nào (Chrome, Edge, Firefox).
-* Chạy mượt mà 60 - 120 FPS, hỗ trợ cả khi **offline không có mạng** (đã tích hợp sẵn thư viện trong `assets/js/`).
+Member B work
+-------------
+The project includes Shader and Mesh classes, GLSL compile/link, Blinn-Phong
+lighting, diffuse texture mapping, exponential underwater fog, animated
+caustics, OBJ/MTL loading through TinyObjLoader and stb_image, and an 80-bubble
+particle system. The model loader groups faces by material, triangulates faces,
+loads each MTL diffuse map, and generates missing normals and planar UVs.
 
----
+The scene loads four real marine/reef meshes: clownfish and coral reef from
+Grab3D, plus whale shark and eagle ray from 3DAssets.dev. The assignment sheet
+mentions Sketchfab; these bundled assets are from the alternate CC0 sources,
+with source records, original downloads, and AI-origin notes in
+assets/source_models. The two GLB models are converted to OBJ for Dev-C++ by
+tools/convert_glb_to_obj.js. The C++ scene animates their motion; the whale
+shark also gets a tail-swish vertex animation in the shader.
 
-## 🎮 KỊCH BẢN ĐIỀU KHIỂN & TRẢI NGHIỆM ĐỘT PHÁ
+Clownfish and coral use their source MTL textures. The shark and eagle ray source
+meshes have material colors but no image maps, so the project supplies 2K
+fallback diffuse maps for those models. 2K fallback textures are also bundled
+for all four species as needed.
 
-* **🚶 Chế độ 1: Khách Tham Quan Đường Hầm Vòm Kính (Tunnel Walkthrough)**
-  * **W, A, S, D:** Bước đi thong thả dọc hành lang hầm kính (được khóa cao độ tự nhiên trên mặt sàn).
-  * **Chuột:** Quay tự do 360° ngắm nhìn đàn cá bơi lội qua vòm kính trong suốt có dải LED xanh và dầm thép chịu lực.
-* **🌊 Chế độ 2: Xuyên Kính Hòa Mình Vào Lòng Biển (100% Không Kính)**
-  * **Phím [SPACE]:** Kích hoạt camera LERP lướt mượt mà tiến về vách kính và xuyên thẳng ra ngoài nước.
-  * **Trải nghiệm mới:** Toàn bộ khung hầm và kính biến mất 100%! Người dùng lơ lửng tự do giữa làn nước xanh ngọc bích, bọt khí nổi li ti, tia nắng mặt trời rọi trực tiếp, bơi lội sát bên cá mập voi khổng lồ.
-  * **Phím E / Q:** Bơi ngoi lên / Lặn sâu xuống (khi ở chế độ lặn đại dương).
-  * **Phím [SPACE] lần nữa:** Camera lùi êm ái xuyên qua mặt kính trở lại sàn đi bộ trong đường hầm.
-* **ESC:** Thoát chương trình.
-
----
-
-## 👥 PHÂN CHIA TRÁCH NHIỆM CHO 2 THÀNH VIÊN
-
-| Thành Viên | Vai Trò | Tệp Tin Phụ Trách | Trọng Tâm Kiến Thức Đồ Họa |
-| :--- | :--- | :--- | :--- |
-| **🧑‍💻 BẠN A** | Kỹ sư Engine & Toán Học Không Gian (Backend) | `include/Camera.h`<br>`include/Tunnel.h`<br>`include/BezierPath.h` | • Tham số hóa nửa hình trụ sinh vòm kính ($x=R\cos\theta, y=R\sin\theta$)<br>• Đường cong Bézier 3D bậc 3 và đạo hàm tiếp tuyến $\text{atan2}$ xoay đầu cá<br>• Camera 6-DOF và thuật toán nội suy LERP chuyển cảnh `glm::mix` |
-| **🧑‍💻 BẠN B** | Kỹ sư Vật Liệu, Shaders & Tài Nguyên 3D (Frontend) | `include/Shader.h`<br>`include/Mesh.h`<br>`include/Model.h`<br>`include/ParticleSystem.h`<br>`assets/shaders/ocean_fog.*` | • Mô hình chiếu sáng Blinn-Phong và tia nắng nước Caustics<br>• Sương mù đại dương hàm mũ (Exponential Fog: $\text{fogFactor} = e^{-\text{density} \times d}$)<br>• Nạp mô hình 3D (.obj) và Texture 2K thật từ Sketchfab<br>• Hệ hạt bọt khí nổi (Particle System) & Alpha Blending kính |
-
----
-
-## 📚 ÁNH XẠ CHUẨN 100% KIẾN THỨC CÁC CHƯƠNG HỌC
-
-1. **Chương CG.2 (Programming CG in OpenGL):**
-   * Khởi tạo Window và quản lý vòng lặp Render 60 FPS bằng GLFW.
-   * Nạp hàm mở rộng OpenGL Core Profile 3.3 bằng GLAD (`gladLoadGLLoader`).
-   * Quản lý mảng đỉnh đối tượng bằng VAO, VBO, EBO (`Mesh.h`, `Tunnel.h`, `ParticleSystem.h`).
-   * Đọc, biên dịch và bắt lỗi Shader GLSL thời gian thực (`Shader.h`).
-2. **Chương CG.3 & CG.4 (3D Graphics & Transformations):**
-   * Phép biến đổi ma trận phân cấp (Hierarchy): thân cá kết hợp vây đuôi dao động $\sin(\omega t)$.
-   * Hệ thống Camera LookAt 3D (`glm::lookAt`) kết hợp phép chiếu phối cảnh (`glm::perspective`).
-   * Bật Z-Buffer khử mặt khuất (`GL_DEPTH_TEST`).
-   * Thuật toán nội suy LERP: $P(t) = (1-t)P_1 + t P_2$ cho chuyển động xuyên kính.
-3. **Chương CG.5 (Curves and Surfaces):**
-   * Đường cong Bézier 3D bậc 3 giải tích: $B(t) = (1-t)^3 P_0 + 3(1-t)^2 t P_1 + 3(1-t) t^2 P_2 + t^3 P_3$.
-   * Đạo hàm bậc 1 tìm vector tiếp tuyến $\vec{T}(t) = B'(t)$ để quay đầu cá theo tiếp tuyến quỹ đạo bơi.
-   * Phương trình mặt cong tham số hình trụ nửa đường tròn sinh lưới đỉnh vòm kính hầm.
-4. **Chương CG.6 (Advanced Graphics Techniques):**
-   * Mô hình chiếu sáng Blinn-Phong: Ambient, Diffuse (Lambert), Specular (Halfway vector $\vec{H}$).
-   * Dán vân bề mặt (Texture Mapping): Nạp texture da cá mập, cá đuối, rạn san hô (`stb_image.h`).
-   * Kỹ thuật trong suốt (Alpha Blending): `glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)`.
-   * Underwater Exponential Fog: $\text{fogFactor} = e^{-\text{density} \times d}$ hòa trộn cùng màu Deep Marine `#041C2C`.
-   * Hệ hạt (Particle System): 100 hạt bọt khí bay từ đáy lên mặt nước.
-
----
-
-## 🎨 BẢNG MÃ MÀU HỆ THỐNG (UNIFIED DESIGN SYSTEM)
-
-* **Abyss Void (`#010A14`):** Nền biển sâu `vec3(0.004, 0.039, 0.078)`.
-* **Deep Marine (`#041C2C`):** Màu sương mù nước biển `vec3(0.016, 0.110, 0.173)`.
-* **Bioluminescent Cyan (`#0CE8DA`):** Tia sáng Caustics & dải LED dẫn lối `vec3(0.047, 0.910, 0.855)`.
-* **Sunlit Azure (`#38BDF8`):** Vệt lóa vòm kính & phản xạ lưng cá `vec3(0.220, 0.741, 0.973)`.
-* **Coral Sunset (`#F43F5E`):** Cụm rạn san hô điểm nhấn `vec3(0.957, 0.247, 0.369)`.
-* **Titanium Steel (`#1E293B`):** Dầm thép chịu lực và sàn gạch hầm `vec3(0.118, 0.161, 0.231)`.
-
----
-
-## 📖 BẢO VỆ ĐỒ ÁN & THUYẾT TRÌNH
-
-Vui lòng tham khảo tệp **`presentation_and_defense_guide.md`** để xem:
-* Kịch bản thuyết trình mẫu 5 phút ấn tượng nhất.
-* Trọn bộ câu hỏi vấn đáp lý thuyết & mã nguồn dành riêng cho Bạn A và Bạn B.
-* Bảng tra cứu "Bắt bệnh lỗi nhanh" khi chạy thực tế.
+Integrated project files
+------------------------
+src/main.cpp                         Render loop and A+B integration
+src/Camera.cpp / include/Camera.h    First-person controls and SPACE LERP
+src/Tunnel.cpp / include/Tunnel.h    Walkway, LED strips, steel arches, glass vault
+src/BezierPath.cpp / include/BezierPath.h  Cubic Bezier animal paths
+src/Shader.cpp / include/Shader.h    Shader compile/link and ownership
+src/Model.cpp / include/Model.h      OBJ/MTL and texture loader
+src/ParticleSystem.cpp               Rising bubble motion
+include/Mesh.h                       VAO/VBO mesh interface
+assets/shaders/ocean_fog.vs          Vertex shader and shark tail motion
+assets/shaders/ocean_fog.fs          Lighting, texture, caustics and fog
+assets/models/                       Four OBJ meshes and their MTL files/maps
+assets/source_models/README.txt      Source and license record
+assets/source_models/downloads/      Original ZIPs, extracted assets and GLBs
+tools/convert_glb_to_obj.js          Offline GLB to OBJ converter
+tools/generate_member_b_textures.cpp  2K fallback texture generator

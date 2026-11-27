@@ -1,0 +1,25 @@
+# Wavefront MTL file for spotted_eagle_ray
+# Texture: ray_texture.png
+
+newmtl material_0
+Kd 1.000 1.000 1.000
+Ka 0.250 0.250 0.250
+Ks 0.400 0.400 0.400
+Ns 45.0
+d 1.0
+map_Kd ../textures/ray_texture.png
+
+newmtl material_1
+Kd 0.950 0.950 0.950
+Ka 0.250 0.250 0.250
+Ks 0.400 0.400 0.400
+Ns 45.0
+d 1.0
+map_Kd ../textures/ray_texture.png
+
+newmtl material_2
+Kd 0.150 0.150 0.150
+Ka 0.100 0.100 0.100
+Ks 0.200 0.200 0.200
+Ns 45.0
+d 1.0
