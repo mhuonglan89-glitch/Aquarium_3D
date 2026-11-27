@@ -126,12 +126,13 @@ private:
     // [CỤM 4: THUẬT TOÁN TÁI SINH HẠT NGẪU NHIÊN NGOÀI HẦM KÍNH (RECYCLING ALGORITHM)]
     // ------------------------------------------------------------------------------------------
     void resetBubble(BubbleParticle& b, bool randomY) {
-        // Rải bọt khí từ đáy biển & các rạn san hô 2 bên hầm (tránh bay vào bên trong hầm kính khô ráo)
-        float side = (rand() % 2 == 0) ? 1.0f : -1.0f;
-        b.BaseX = side * (185.0f + static_cast<float>(rand() % 480));
+        // Rải bọt khí tại 4 khoảng biển mở xung quanh Đại Sảnh & các nhánh mê cung (tránh bay vào trong hầm kính)
+        float sx = (rand() % 2 == 0) ? 1.0f : -1.0f;
+        float sz = (rand() % 2 == 0) ? 1.0f : -1.0f;
+        b.BaseX = sx * (175.0f + static_cast<float>(rand() % 360));
         b.Position.x = b.BaseX;
-        b.Position.z = -850.0f + static_cast<float>(rand() % 1700);
-        b.Position.y = randomY ? (5.0f + static_cast<float>(rand() % 470)) : 5.0f;
+        b.Position.z = sz * (175.0f + static_cast<float>(rand() % 420));
+        b.Position.y = randomY ? (8.0f + static_cast<float>(rand() % 470)) : 8.0f;
 
         b.Speed = 28.0f + static_cast<float>(rand() % 38);
         b.Radius = 1.6f + static_cast<float>(rand() % 4) * 0.75f;

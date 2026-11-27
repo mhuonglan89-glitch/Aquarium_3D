@@ -34,7 +34,7 @@
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-Camera camera(glm::vec3(0.0f, 38.0f, -350.0f)); // Khởi tạo đứng trên sàn đường hầm nhìn dọc +Z
+Camera camera(glm::vec3(0.0f, 38.0f, -520.0f)); // Khởi tạo tại Lối vào chính (Nhánh Nam) nhìn về Đại Sảnh Trung Tâm
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -59,12 +59,17 @@ Mesh createSeabedMesh() {
     const float step = size / grid;
 
     auto getSandY = [](float x, float z) -> float {
-        // Giữ đáy cát bên dưới sàn hầm (y = -2) để không xuyên vào đường hầm,
-        // và tạo cồn cát uốn lượn tự nhiên ở vùng biển mở bên ngoài (|x| > 175)
-        float distOutside = glm::max(0.0f, std::abs(x) - 175.0f);
-        float blend = glm::clamp(distOutside / 120.0f, 0.0f, 1.0f);
-        float dune = sinf(x * 0.008f) * 10.0f + cosf(z * 0.007f) * 10.0f + sinf((x + z) * 0.015f) * 4.0f;
-        return -2.0f + blend * dune;
+        // Giữ đáy cát phẳng (-2.0f) dưới toàn bộ khu vực mê cung & đại sảnh, chỉ nhấp nhô cồn cát ở vùng biển xa
+        float r = std::sqrt(x * x + z * z);
+        bool nearCorridor = (std::abs(x) < 145.0f && z > -820.0f && z < 820.0f) ||
+                            (std::abs(z) < 145.0f && x > -780.0f && x < 780.0f) ||
+                            (std::abs(x + 640.0f) < 145.0f && z > -600.0f && z < 140.0f) ||
+                            (std::abs(x - 640.0f) < 145.0f && z > -580.0f && z < 140.0f) ||
+                            (std::abs(z - 680.0f) < 145.0f && x > -140.0f && x < 600.0f) ||
+                            (r < 250.0f);
+        if (nearCorridor) return -2.0f;
+        float dune = sinf(x * 0.008f) * 9.0f + cosf(z * 0.007f) * 9.0f + sinf((x + z) * 0.015f) * 3.5f;
+        return -2.0f + dune;
     };
 
     for (int iz = 0; iz <= grid; ++iz) {
@@ -154,12 +159,20 @@ struct RoamingFish {
     bool isFishShader;     // Bật hiệu ứng uốn đuôi trên GPU
 };
 
-// Hàm giữ sinh vật luôn bơi ngoài đường hầm kính (không xuyên vào trong lối đi khô ráo)
+// Hàm giữ sinh vật luôn bơi ngoài tất cả các nhánh mê cung & Đại Sảnh Trung Tâm
 static glm::vec3 keepOutsideTunnel(glm::vec3 p) {
-    if (std::abs(p.z) < 830.0f && std::abs(p.x) < 195.0f && p.y < 195.0f) {
-        // Nếu đường bơi đi ngang qua thân hầm, nâng độ cao vọt qua nóc vòm kính (R = 160)
-        float archTop = std::sqrt(glm::max(0.0f, 195.0f * 195.0f - p.x * p.x));
-        p.y = glm::max(p.y, archTop + 28.0f);
+    float rHub = std::sqrt(p.x * p.x + p.z * p.z);
+    if (rHub < 245.0f && p.y < 255.0f) {
+        p.y = 260.0f;
+    } else {
+        bool inBranch = (std::abs(p.x) < 135.0f && p.z > -810.0f && p.z < 810.0f) ||
+                        (std::abs(p.z) < 135.0f && p.x > -770.0f && p.x < 770.0f) ||
+                        (std::abs(p.x + 640.0f) < 135.0f && p.z > -590.0f && p.z < 135.0f) ||
+                        (std::abs(p.x - 640.0f) < 135.0f && p.z > -570.0f && p.z < 135.0f) ||
+                        (std::abs(p.z - 680.0f) < 135.0f && p.x > -135.0f && p.x < 590.0f);
+        if (inBranch && p.y < 140.0f) {
+            p.y = 148.0f;
+        }
     }
     if (p.y < 18.0f) p.y = 18.0f;
     return p;
@@ -255,7 +268,7 @@ int main() {
     // ------------------------------------------------------------------------------------------
     // 🟢 BƯỚC 3: HẦM KÍNH ACRYLIC & CÁC QUỸ ĐẠO TUẦN TRA KHÉP KÍN RỘNG KHẮP BIỂN (BẠN A)
     // ------------------------------------------------------------------------------------------
-    Tunnel glassTunnel(160.0f, 1600.0f);
+    Tunnel glassTunnel(110.0f, 1600.0f);
 
     // 3.1. Quỹ đạo Cá voi khổng lồ (Vòng tuần tra đại dương rộng lớn tầng cao)
     ClosedSplinePath whalePath({
@@ -287,34 +300,34 @@ int main() {
         glm::vec3( 440.0f,  95.0f,  -80.0f)
     });
 
-    // 3.4. Quỹ đạo Cá đuối đốm & Cá đuối Manta (Lướt uốn lượn ngay trên vòm kính)
+    // 3.4. Quỹ đạo Cá đuối đốm & Cá đuối Manta (Lướt uốn lượn quanh Đại Sảnh Trung Tâm & các nhánh mê cung)
     ClosedSplinePath rayPath({
-        glm::vec3(-260.0f,  95.0f, -450.0f),
-        glm::vec3(   0.0f, 215.0f,  -50.0f),
-        glm::vec3( 280.0f, 105.0f,  350.0f),
-        glm::vec3( 260.0f, 165.0f,  680.0f),
-        glm::vec3( -40.0f, 220.0f,  300.0f),
-        glm::vec3(-290.0f, 130.0f,  -60.0f)
+        glm::vec3(-340.0f, 165.0f, -340.0f),
+        glm::vec3(   0.0f, 285.0f,    0.0f), // Lướt ngang qua nóc vòm Đại Sảnh Trung Tâm!
+        glm::vec3( 360.0f, 155.0f,  340.0f),
+        glm::vec3( 320.0f, 185.0f,  460.0f),
+        glm::vec3(-280.0f, 235.0f,  320.0f),
+        glm::vec3(-380.0f, 150.0f, -240.0f)
     });
 
-    // 3.5. Quỹ đạo Đàn Cá heo (Bơi theo cung tròn nhấp nhô quanh hầm)
+    // 3.5. Quỹ đạo Đàn Cá heo (Bơi theo cung tròn nhấp nhô quanh 4 góc đại dương)
     ClosedSplinePath dolphinPath({
-        glm::vec3( 290.0f, 140.0f, -500.0f),
-        glm::vec3( 260.0f, 220.0f,    0.0f),
-        glm::vec3(  40.0f, 260.0f,  450.0f),
-        glm::vec3(-280.0f, 190.0f,  520.0f),
-        glm::vec3(-310.0f, 120.0f,  -20.0f),
-        glm::vec3( -30.0f, 235.0f, -460.0f)
+        glm::vec3( 350.0f, 180.0f, -360.0f),
+        glm::vec3( 360.0f, 250.0f,  350.0f),
+        glm::vec3(   0.0f, 290.0f,  480.0f),
+        glm::vec3(-360.0f, 210.0f,  380.0f),
+        glm::vec3(-360.0f, 155.0f, -320.0f),
+        glm::vec3(   0.0f, 275.0f, -450.0f)
     });
 
-    // 3.6. Quỹ đạo Rùa biển (Bơi thong thả gần các cụm san hô 2 bên hầm)
+    // 3.6. Quỹ đạo Rùa biển (Bơi thong thả quanh 4 khu vườn san hô bên ngoài Đại Sảnh)
     ClosedSplinePath turtlePath({
-        glm::vec3(-250.0f,  65.0f, -520.0f),
-        glm::vec3(-280.0f,  85.0f,  150.0f),
-        glm::vec3(-230.0f,  75.0f,  620.0f),
-        glm::vec3( 230.0f, 195.0f,  480.0f),
-        glm::vec3( 290.0f,  70.0f,  -60.0f),
-        glm::vec3( 240.0f,  90.0f, -560.0f)
+        glm::vec3(-350.0f,  75.0f, -340.0f),
+        glm::vec3(-380.0f,  95.0f,  340.0f),
+        glm::vec3(   0.0f, 270.0f,  380.0f),
+        glm::vec3( 360.0f,  85.0f,  340.0f),
+        glm::vec3( 360.0f,  75.0f, -320.0f),
+        glm::vec3(   0.0f, 265.0f, -380.0f)
     });
 
     // 3.7. Khởi tạo 52 sinh vật bơi tự do đa vùng (Không dồn vào 1 chỗ, phân bố khắp 3D)
@@ -396,25 +409,29 @@ int main() {
                       0.4f, 0.35f, 0.28f, 30.0f, 0.0f, true);
     }
 
-    // 3.8. Rải 16 cụm rạn san hô lớn nhỏ dọc 2 bên đáy biển ngoài hầm kính (Y = 0)
+    // 3.8. Rải 16 cụm rạn san hô tại 4 vùng biển mở xung quanh Đại Sảnh & 4 cánh mê cung (không đè vào hầm)
     struct CoralSpot { glm::vec3 pos; float scale; float rotY; };
     std::vector<CoralSpot> coralSpots = {
-        { glm::vec3(-260.0f, 22.0f, -620.0f), 115.0f, 0.4f },
-        { glm::vec3(-340.0f, 28.0f, -320.0f), 140.0f, 1.2f },
-        { glm::vec3(-240.0f, 20.0f,  -40.0f), 105.0f, 2.5f },
-        { glm::vec3(-380.0f, 30.0f,  220.0f), 150.0f, 0.9f },
-        { glm::vec3(-270.0f, 24.0f,  490.0f), 120.0f, 3.1f },
-        { glm::vec3(-350.0f, 26.0f,  720.0f), 130.0f, 1.7f },
-        { glm::vec3(-520.0f, 25.0f, -180.0f), 135.0f, 2.0f },
-        { glm::vec3(-560.0f, 28.0f,  360.0f), 145.0f, 0.6f },
-        { glm::vec3( 260.0f, 22.0f, -580.0f), 120.0f, 1.5f },
-        { glm::vec3( 360.0f, 28.0f, -260.0f), 145.0f, 2.8f },
-        { glm::vec3( 245.0f, 20.0f,   30.0f), 110.0f, 0.3f },
-        { glm::vec3( 350.0f, 26.0f,  290.0f), 135.0f, 1.9f },
-        { glm::vec3( 265.0f, 22.0f,  550.0f), 120.0f, 2.2f },
-        { glm::vec3( 380.0f, 28.0f,  760.0f), 140.0f, 0.8f },
-        { glm::vec3( 540.0f, 26.0f, -120.0f), 135.0f, 1.1f },
-        { glm::vec3( 520.0f, 24.0f,  420.0f), 130.0f, 2.9f }
+        // Vùng Tây-Nam (Vườn San Hô bên ngoài nhánh Tây & Nam)
+        { glm::vec3(-290.0f, 24.0f, -290.0f), 125.0f, 0.4f },
+        { glm::vec3(-420.0f, 28.0f, -240.0f), 145.0f, 1.2f },
+        { glm::vec3(-360.0f, 24.0f, -460.0f), 130.0f, 2.5f },
+        { glm::vec3(-860.0f, 30.0f, -280.0f), 150.0f, 0.9f },
+        // Vùng Đông-Nam (Rừng Sứa bên ngoài nhánh Đông & Nam)
+        { glm::vec3( 290.0f, 24.0f, -290.0f), 125.0f, 1.5f },
+        { glm::vec3( 420.0f, 28.0f, -240.0f), 145.0f, 2.8f },
+        { glm::vec3( 360.0f, 24.0f, -460.0f), 130.0f, 0.3f },
+        { glm::vec3( 860.0f, 28.0f, -240.0f), 145.0f, 1.9f },
+        // Vùng Tây-Bắc (Nhìn từ Đại Sảnh & Hành lang Bắc/Tây)
+        { glm::vec3(-290.0f, 24.0f,  290.0f), 130.0f, 2.2f },
+        { glm::vec3(-440.0f, 28.0f,  260.0f), 145.0f, 0.8f },
+        { glm::vec3(-340.0f, 26.0f,  480.0f), 135.0f, 1.1f },
+        { glm::vec3(-560.0f, 28.0f,  420.0f), 140.0f, 2.9f },
+        // Vùng Đông-Bắc (Hẻm Cá Mập bên ngoài nhánh Bắc & Đông)
+        { glm::vec3( 290.0f, 24.0f,  290.0f), 130.0f, 1.7f },
+        { glm::vec3( 430.0f, 28.0f,  360.0f), 145.0f, 2.0f },
+        { glm::vec3( 250.0f, 22.0f,  480.0f), 120.0f, 0.6f },
+        { glm::vec3( 660.0f, 28.0f,  420.0f), 140.0f, 3.1f }
     };
 
     std::cout << "========================================================\n";
@@ -448,15 +465,11 @@ int main() {
         if (titleTimer >= 0.25f) {
             titleTimer = 0.0f;
             std::ostringstream title;
-            if (!camera.isDiving && std::abs(camera.Position.z) > 720.0f) {
-                title << "[DAI QUAN SAT BAN CAU 180] Bam [SPACE] de xuyen kinh lan ra dai duong!";
-            } else {
-                title << (camera.isDiving ? "[LAN BIEN TU DO 6-DOF]" : "[TRONG HAM KINH ACRYLIC]")
-                      << " | Pos(" << static_cast<int>(camera.Position.x) << ", "
-                      << static_cast<int>(camera.Position.y) << ", "
-                      << static_cast<int>(camera.Position.z) << ")"
-                      << " | WASD/Mui ten: Di | E/Q: Len-Xuong | SPACE: Doi che do | Shift: Nhanh";
-            }
+            title << "[" << camera.GetZoneName() << "]"
+                  << " | Pos(" << static_cast<int>(camera.Position.x) << ", "
+                  << static_cast<int>(camera.Position.y) << ", "
+                  << static_cast<int>(camera.Position.z) << ")"
+                  << " | WASD/Mui ten: Di | E/Q: Len-Xuong | SPACE: Lan ra bien";
             glfwSetWindowTitle(window, title.str().c_str());
         }
 
