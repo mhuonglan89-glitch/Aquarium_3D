@@ -47,6 +47,7 @@ public:
 
     // Vẽ toàn bộ hầm thủy cung
     void Draw(Shader& shader) {
+        shader.setBool("useTexture", false);
         // 1. Vẽ sàn gạch hầm tối màu (Titanium Steel #1E293B)
         shader.setVec3("objectColor", glm::vec3(0.08f, 0.12f, 0.18f));
         shader.setFloat("alphaVal", 1.0f);

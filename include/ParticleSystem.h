@@ -51,6 +51,7 @@ public:
     }
 
     void UpdateAndRender(float dt, glm::vec3 camPos, Shader& shader) {
+        shader.setBool("useTexture", false);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glBindVertexArray(VAO);

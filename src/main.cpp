@@ -69,6 +69,7 @@ int main() {
 
     // 3. Khởi tạo Shaders & Tài nguyên 3D (Của BẠN B)
     Shader oceanShader("assets/shaders/ocean_fog.vs", "assets/shaders/ocean_fog.fs");
+    std::cout << "[INFO::SHADER] Program ID: " << oceanShader.ID << std::endl;
     
     // Nạp Models và Texture thật
     Model whaleShark("assets/models/whale_shark.obj", glm::vec3(0.18f, 0.28f, 0.38f), "assets/textures/shark_diffuse.jpg");
@@ -80,20 +81,20 @@ int main() {
     // 4. Khởi tạo Vòm kính & Quỹ đạo Bézier 3D (Của BẠN A)
     Tunnel glassTunnel(160.0f, 1500.0f); // Bán kính vòm 160, dài 1500
 
-    // Quỹ đạo bơi Bézier của cá mập voi (4 điểm mốc lượn quanh bên ngoài hầm)
+    // Quỹ đạo bơi Bézier của cá mập voi (Lượn vòng quanh và băng qua đỉnh vòm kính)
     BezierPath sharkPath(
-        glm::vec3(-450.0f, -80.0f,  200.0f),
-        glm::vec3(-100.0f, -140.0f, -450.0f),
-        glm::vec3( 300.0f, -100.0f, -300.0f),
-        glm::vec3( 480.0f, -50.0f,   250.0f)
+        glm::vec3(-260.0f,  70.0f,  250.0f),
+        glm::vec3(-80.0f,  120.0f, -150.0f),
+        glm::vec3( 160.0f,  90.0f, -50.0f),
+        glm::vec3( 280.0f,  60.0f,  250.0f)
     );
 
-    // Quỹ đạo bơi Bézier của cá đuối (Lướt ngay trên nóc vòm kính hầm)
+    // Quỹ đạo bơi Bézier của cá đuối (Lướt ngay sát trên nóc vòm kính hầm - đỉnh vòm kính R=160)
     BezierPath rayPath(
-        glm::vec3(-180.0f, -180.0f, -350.0f),
-        glm::vec3(  60.0f, -160.0f,  100.0f),
-        glm::vec3( 140.0f, -150.0f,  450.0f),
-        glm::vec3( 260.0f, -170.0f,  850.0f)
+        glm::vec3(-100.0f, 175.0f, -250.0f),
+        glm::vec3(  20.0f, 185.0f,    0.0f),
+        glm::vec3(  80.0f, 180.0f,  200.0f),
+        glm::vec3( 160.0f, 175.0f,  450.0f)
     );
 
     std::cout << "========================================================\n";
@@ -116,8 +117,8 @@ int main() {
             glfwSetWindowShouldClose(window, true);
         camera.ProcessKeyboard(window, deltaTime);
 
-        // Xóa màn hình với màu xanh thẳm Abyss Void (#010A14)
-        glClearColor(0.004f, 0.039f, 0.078f, 1.0f);
+        // Xóa màn hình với màu xanh ngọc đại dương Deep Marine (#041C2C)
+        glClearColor(0.016f, 0.110f, 0.173f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         oceanShader.use();
@@ -145,7 +146,7 @@ int main() {
         modelShark = glm::translate(modelShark, sharkPos);
         modelShark = glm::rotate(modelShark, sharkAngle, glm::vec3(0, 1, 0));
         modelShark = glm::rotate(modelShark, sharkPitch, glm::vec3(1, 0, 0));
-        modelShark = glm::scale(modelShark, glm::vec3(1.8f));
+        modelShark = glm::scale(modelShark, glm::vec3(8.0f));
         oceanShader.setMat4("model", modelShark);
         oceanShader.setBool("isFish", true);
         whaleShark.Draw(oceanShader);
@@ -162,22 +163,22 @@ int main() {
         modelRay = glm::translate(modelRay, rayPos);
         modelRay = glm::rotate(modelRay, rayAngle, glm::vec3(0, 1, 0));
         modelRay = glm::rotate(modelRay, rayPitch, glm::vec3(1, 0, 0));
-        modelRay = glm::scale(modelRay, glm::vec3(1.4f));
+        modelRay = glm::scale(modelRay, glm::vec3(6.0f));
         oceanShader.setMat4("model", modelRay);
         oceanShader.setBool("isFish", false);
         eagleRay.Draw(oceanShader);
 
-        // 1.3 Rạn san hô cố định ở đáy cát
+        // 1.3 Rạn san hô cố định ở đáy cát hai bên vòm kính
         oceanShader.setBool("isFish", false);
         glm::mat4 modelCoral1 = glm::mat4(1.0f);
-        modelCoral1 = glm::translate(modelCoral1, glm::vec3(220.0f, -120.0f, 150.0f));
-        modelCoral1 = glm::scale(modelCoral1, glm::vec3(2.5f));
+        modelCoral1 = glm::translate(modelCoral1, glm::vec3(165.0f, 0.0f, -50.0f));
+        modelCoral1 = glm::scale(modelCoral1, glm::vec3(5.0f));
         oceanShader.setMat4("model", modelCoral1);
         coralReef.Draw(oceanShader);
 
         glm::mat4 modelCoral2 = glm::mat4(1.0f);
-        modelCoral2 = glm::translate(modelCoral2, glm::vec3(-220.0f, -130.0f, -100.0f));
-        modelCoral2 = glm::scale(modelCoral2, glm::vec3(2.0f));
+        modelCoral2 = glm::translate(modelCoral2, glm::vec3(-165.0f, 0.0f, 50.0f));
+        modelCoral2 = glm::scale(modelCoral2, glm::vec3(4.5f));
         oceanShader.setMat4("model", modelCoral2);
         coralReef.Draw(oceanShader);
 
@@ -186,14 +187,14 @@ int main() {
         for (int i = 0; i < 6; ++i) {
             float phase = currentFrame * 1.5f + i * 1.0f;
             glm::vec3 cfPos = glm::vec3(
-                220.0f + sin(phase) * 45.0f,
-                -100.0f + cos(phase * 0.8f) * 15.0f,
-                150.0f + cos(phase) * 45.0f
+                165.0f + sin(phase) * 30.0f,
+                25.0f + cos(phase * 0.8f) * 15.0f,
+                -50.0f + cos(phase) * 30.0f
             );
             glm::mat4 modelCF = glm::mat4(1.0f);
             modelCF = glm::translate(modelCF, cfPos);
             modelCF = glm::rotate(modelCF, -phase, glm::vec3(0, 1, 0));
-            modelCF = glm::scale(modelCF, glm::vec3(0.6f));
+            modelCF = glm::scale(modelCF, glm::vec3(1.8f));
             oceanShader.setMat4("model", modelCF);
             clownfish.Draw(oceanShader);
         }
