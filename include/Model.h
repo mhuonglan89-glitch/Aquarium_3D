@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
@@ -37,12 +38,14 @@ public:
     unsigned int textureID = 0;      // ID của Texture chính trên GPU
     bool hasTexture = false;         // Cờ kiểm tra: Vật thể có dùng ảnh Texture ngoài hay không
     glm::vec3 normalizedSize = glm::vec3(1.0f); // Tỉ lệ kích thước sau khi chuẩn hóa
+    glm::vec3 alignRotationDeg = glm::vec3(0.0f); // Góc xoay hiệu chỉnh trục đầu (+Z) & lưng (+Y)
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 1: CONSTRUCTOR TỰ NHẬN DIỆN ĐỊNH DẠNG .OBJ / .GLB VÀ NẠP TEXTURE]
     // ------------------------------------------------------------------------------------------
-    Model(const std::string& modelPath, glm::vec3 color = glm::vec3(0.3f, 0.6f, 0.8f), const std::string& texPath = "") {
-        defaultColor = color;
+    Model(const std::string& modelPath, glm::vec3 color = glm::vec3(0.3f, 0.6f, 0.8f),
+          const std::string& texPath = "", glm::vec3 alignRotDeg = glm::vec3(0.0f))
+        : defaultColor(color), alignRotationDeg(alignRotDeg) {
         if (!texPath.empty()) {
             loadTexture(texPath);
         }
@@ -100,6 +103,19 @@ private:
         if (rawMeshes.empty()) {
             createFallbackFishMesh();
             return;
+        }
+
+        glm::mat4 alignMat = glm::mat4(1.0f);
+        alignMat = glm::rotate(alignMat, glm::radians(alignRotationDeg.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        alignMat = glm::rotate(alignMat, glm::radians(alignRotationDeg.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        alignMat = glm::rotate(alignMat, glm::radians(alignRotationDeg.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat3 alignNormMat = glm::mat3(alignMat);
+
+        for (auto& rm : rawMeshes) {
+            for (auto& v : rm.vertices) {
+                v.Position = glm::vec3(alignMat * glm::vec4(v.Position, 1.0f));
+                v.Normal = glm::normalize(alignNormMat * v.Normal);
+            }
         }
 
         glm::vec3 minPt(1e9f), maxPt(-1e9f);

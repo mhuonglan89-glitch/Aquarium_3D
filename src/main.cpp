@@ -231,10 +231,11 @@ int main() {
     Mesh waterSurfaceMesh = createWaterSurfaceMesh();
 
     // Nạp đầy đủ các sinh vật biển 3D từ Sketchfab (.obj & .glb kèm texture)
+    // Tham số thứ 4 (alignRotDeg) chuẩn hóa trục đầu về +Z và lưng về +Y để 100% cá bơi xuôi chiều!
     Model whaleModel      ("assets/models/whale.glb",                     glm::vec3(0.22f, 0.34f, 0.48f));
-    Model whaleSharkModel ("assets/models/whale_shark.obj",               glm::vec3(0.32f, 0.44f, 0.56f), "assets/textures/shark_diffuse.jpg");
-    Model sharkModel      ("assets/models/shark.glb",                     glm::vec3(0.45f, 0.52f, 0.60f));
-    Model eagleRayModel   ("assets/models/spotted_eagle_ray.obj",         glm::vec3(0.22f, 0.30f, 0.42f), "assets/textures/ray_texture.png");
+    Model whaleSharkModel ("assets/models/whale_shark.obj",               glm::vec3(0.32f, 0.44f, 0.56f), "assets/textures/shark_diffuse.jpg", glm::vec3(0.0f, -90.0f, 0.0f));
+    Model sharkModel      ("assets/models/shark.glb",                     glm::vec3(0.45f, 0.52f, 0.60f), "", glm::vec3(-90.0f, 0.0f, 0.0f));
+    Model eagleRayModel   ("assets/models/spotted_eagle_ray.obj",         glm::vec3(0.22f, 0.30f, 0.42f), "assets/textures/ray_texture.png", glm::vec3(0.0f, -90.0f, 0.0f));
     Model mantaRayModel   ("assets/models/manta_ray.glb",                 glm::vec3(0.18f, 0.24f, 0.34f));
     Model dolphinModel    ("assets/models/dolphin.glb",                   glm::vec3(0.45f, 0.62f, 0.78f));
     Model turtleModel     ("assets/models/turtle.glb",                    glm::vec3(0.28f, 0.52f, 0.32f));
@@ -447,11 +448,15 @@ int main() {
         if (titleTimer >= 0.25f) {
             titleTimer = 0.0f;
             std::ostringstream title;
-            title << (camera.isDiving ? "[LAN BIEN TU DO 6-DOF]" : "[TRONG HAM KINH ACRYLIC]")
-                  << " | Pos(" << static_cast<int>(camera.Position.x) << ", "
-                  << static_cast<int>(camera.Position.y) << ", "
-                  << static_cast<int>(camera.Position.z) << ")"
-                  << " | WASD/Mui ten: Di | E/Q: Len-Xuong | SPACE: Doi che do | Shift: Nhanh | TAB: Chuot";
+            if (!camera.isDiving && std::abs(camera.Position.z) > 720.0f) {
+                title << "[DAI QUAN SAT BAN CAU 180] Bam [SPACE] de xuyen kinh lan ra dai duong!";
+            } else {
+                title << (camera.isDiving ? "[LAN BIEN TU DO 6-DOF]" : "[TRONG HAM KINH ACRYLIC]")
+                      << " | Pos(" << static_cast<int>(camera.Position.x) << ", "
+                      << static_cast<int>(camera.Position.y) << ", "
+                      << static_cast<int>(camera.Position.z) << ")"
+                      << " | WASD/Mui ten: Di | E/Q: Len-Xuong | SPACE: Doi che do | Shift: Nhanh";
+            }
             glfwSetWindowTitle(window, title.str().c_str());
         }
 
@@ -501,8 +506,8 @@ int main() {
 
         float tWS1 = fmodf(currentFrame * 0.030f + 0.15f, 1.0f);
         float tWS2 = fmodf(currentFrame * 0.026f + 0.65f, 1.0f);
-        drawSplineCreature(oceanShader, whaleSharkModel, whaleSharkPath, tWS1, 145.0f, currentFrame, 1.0f, 90.0f, 0.05f, true);
-        drawSplineCreature(oceanShader, whaleSharkModel, whaleSharkPath, tWS2, 125.0f, currentFrame, 3.4f, 90.0f, 0.05f, true);
+        drawSplineCreature(oceanShader, whaleSharkModel, whaleSharkPath, tWS1, 145.0f, currentFrame, 1.0f, 0.0f, 0.05f, true);
+        drawSplineCreature(oceanShader, whaleSharkModel, whaleSharkPath, tWS2, 125.0f, currentFrame, 3.4f, 0.0f, 0.05f, true);
 
         float tSh1 = fmodf(currentFrame * 0.042f + 0.25f, 1.0f);
         float tSh2 = fmodf(currentFrame * 0.038f + 0.78f, 1.0f);

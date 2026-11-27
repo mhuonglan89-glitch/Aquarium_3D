@@ -126,8 +126,19 @@ public:
             if (keyDown)     targetPos.y -= velocity * 0.65f; // Hạ tầm mắt xuống sát sàn LED
 
             targetPos.y = glm::clamp(targetPos.y, 16.0f, 105.0f);
-            targetPos.x = glm::clamp(targetPos.x, -110.0f, 110.0f);
-            targetPos.z = glm::clamp(targetPos.z, -760.0f, 760.0f);
+            // Giới hạn đi bộ trong thân hầm [-800, 800] VÀ mở rộng vào 2 Đài Quan Sát bán nguyệt ở 2 đầu
+            if (std::abs(targetPos.z) <= 800.0f) {
+                targetPos.x = glm::clamp(targetPos.x, -110.0f, 110.0f);
+            } else {
+                float dz = std::abs(targetPos.z) - 800.0f;
+                float r2 = targetPos.x * targetPos.x + dz * dz;
+                float maxR = 112.0f;
+                if (r2 > maxR * maxR) {
+                    float scale = maxR / std::sqrt(r2);
+                    targetPos.x *= scale;
+                    targetPos.z = (targetPos.z > 0.0f ? 1.0f : -1.0f) * (800.0f + dz * scale);
+                }
+            }
         } else {
             // --- CHẾ ĐỘ 2: BƠI TỰ DO 6 HƯỚNG TRONG LÒNG BIỂN (6-DOF) ---
             if (keyForward)  targetPos += Front * velocity;

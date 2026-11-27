@@ -183,6 +183,46 @@ private:
             }
         }
 
+        // Bổ sung 2 Mái Vòm Kính Bán Cầu Toàn Cảnh ở 2 đầu hầm (Z = -L/2 và Z = +L/2)
+        // Khắc phục triệt để hạn chế "hầm bị cắt cụt ở hai đầu"
+        const int domeRings = 12;
+        const int domeSegs = segs;
+        for (int endSign : {-1, 1}) {
+            float zCenter = endSign * (l / 2.0f);
+            for (int rIdx = 0; rIdx < domeRings; ++rIdx) {
+                float lat1 = (3.14159265f * 0.5f) * (float)rIdx / domeRings;
+                float lat2 = (3.14159265f * 0.5f) * (float)(rIdx + 1) / domeRings;
+                for (int sIdx = 0; sIdx < domeSegs; ++sIdx) {
+                    float lon1 = 3.14159265f * (float)sIdx / domeSegs;
+                    float lon2 = 3.14159265f * (float)(sIdx + 1) / domeSegs;
+
+                    auto domePt = [&](float lat, float lon) {
+                        return glm::vec3(
+                            r * cos(lat) * cos(lon),
+                            r * sin(lat),
+                            zCenter + endSign * r * cos(lat) * sin(lon)
+                        );
+                    };
+                    auto pushDomeV = [&](glm::vec3 p, float u, float v) {
+                        verts.push_back(p.x); verts.push_back(p.y); verts.push_back(p.z);
+                        glm::vec3 n = glm::normalize(p - glm::vec3(0.0f, 0.0f, zCenter));
+                        verts.push_back(n.x); verts.push_back(n.y); verts.push_back(n.z);
+                        verts.push_back(u); verts.push_back(v);
+                    };
+
+                    glm::vec3 p1 = domePt(lat1, lon1), p2 = domePt(lat1, lon2);
+                    glm::vec3 p3 = domePt(lat2, lon1), p4 = domePt(lat2, lon2);
+                    pushDomeV(p1, (float)sIdx/domeSegs, (float)rIdx/domeRings);
+                    pushDomeV(p2, (float)(sIdx+1)/domeSegs, (float)rIdx/domeRings);
+                    pushDomeV(p3, (float)sIdx/domeSegs, (float)(rIdx+1)/domeRings);
+
+                    pushDomeV(p2, (float)(sIdx+1)/domeSegs, (float)rIdx/domeRings);
+                    pushDomeV(p4, (float)(sIdx+1)/domeSegs, (float)(rIdx+1)/domeRings);
+                    pushDomeV(p3, (float)sIdx/domeSegs, (float)(rIdx+1)/domeRings);
+                }
+            }
+        }
+
         glassVertexCount = static_cast<int>(verts.size() / 8);
         setupBuffer(VAO_Glass, VBO_Glass, verts);
     }
@@ -205,6 +245,22 @@ private:
 
             pushFloorVertex(verts, v1); pushFloorVertex(verts, v2); pushFloorVertex(verts, v3);
             pushFloorVertex(verts, v2); pushFloorVertex(verts, v4); pushFloorVertex(verts, v3);
+        }
+
+        // Sàn bán nguyệt nối liền mạch cho 2 Đài Quan Sát ở đầu và cuối hầm
+        const int fanSegs = 28;
+        for (int endSign : {-1, 1}) {
+            float zCenter = endSign * (l / 2.0f);
+            glm::vec3 centerPt(0.0f, 0.0f, zCenter);
+            for (int i = 0; i < fanSegs; ++i) {
+                float a1 = 3.14159265f * (float)i / fanSegs;
+                float a2 = 3.14159265f * (float)(i + 1) / fanSegs;
+                glm::vec3 p1(width * cos(a1), 0.0f, zCenter + endSign * width * sin(a1));
+                glm::vec3 p2(width * cos(a2), 0.0f, zCenter + endSign * width * sin(a2));
+                pushFloorVertex(verts, centerPt);
+                pushFloorVertex(verts, p1);
+                pushFloorVertex(verts, p2);
+            }
         }
 
         floorVertexCount = static_cast<int>(verts.size() / 8);
@@ -324,6 +380,24 @@ private:
             glm::vec3 r3(edgeX - ledWidth, 0.3f, z2), r4(edgeX, 0.3f, z2);
             pushFloorVertex(verts, r1); pushFloorVertex(verts, r2); pushFloorVertex(verts, r3);
             pushFloorVertex(verts, r2); pushFloorVertex(verts, r4); pushFloorVertex(verts, r3);
+        }
+
+        // Vòng đèn LED bán nguyệt ôm trọn chu vi 2 Đài Quan Sát cuối hầm
+        const int arcSegs = 28;
+        for (int endSign : {-1, 1}) {
+            float zCenter = endSign * (l / 2.0f);
+            float rIn = edgeX - ledWidth;
+            float rOut = edgeX;
+            for (int i = 0; i < arcSegs; ++i) {
+                float a1 = 3.14159265f * (float)i / arcSegs;
+                float a2 = 3.14159265f * (float)(i + 1) / arcSegs;
+                glm::vec3 i1(rIn  * cos(a1), 0.3f, zCenter + endSign * rIn  * sin(a1));
+                glm::vec3 i2(rIn  * cos(a2), 0.3f, zCenter + endSign * rIn  * sin(a2));
+                glm::vec3 o1(rOut * cos(a1), 0.3f, zCenter + endSign * rOut * sin(a1));
+                glm::vec3 o2(rOut * cos(a2), 0.3f, zCenter + endSign * rOut * sin(a2));
+                pushFloorVertex(verts, i1); pushFloorVertex(verts, o1); pushFloorVertex(verts, i2);
+                pushFloorVertex(verts, o1); pushFloorVertex(verts, o2); pushFloorVertex(verts, i2);
+            }
         }
 
         ledVertexCount = static_cast<int>(verts.size() / 8);
