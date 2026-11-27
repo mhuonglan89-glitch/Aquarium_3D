@@ -20,43 +20,42 @@
 class Camera {
 public:
     // ------------------------------------------------------------------------------------------
-    // [CỤM 1: CÁC VECTOR HỆ TRỤC TỌA ĐỘ CỤC BỘ CỦA CAMERA (CAMERA COORDINATE SYSTEM)]
+    // [CỤM 1: CÁC VECTOR HỆ TRỤC TỌA ĐỘ CỤC BỘ CỦA CAMERA]
     // ------------------------------------------------------------------------------------------
-    glm::vec3 Position; // Vị trí hiện tại của Camera trong không gian thế giới (World Space)
-    glm::vec3 Front;    // Vector hướng nhìn thẳng về phía trước (Z-axis của Camera)
-    glm::vec3 Up;       // Vector hướng thẳng lên đỉnh đầu người quan sát (Y-axis của Camera)
-    glm::vec3 Right;    // Vector hướng sang bên tay phải người quan sát (X-axis của Camera)
-    glm::vec3 WorldUp;  // Vector quy ước hướng lên trời của toàn thế giới: vec3(0, 1, 0)
+    glm::vec3 Position;
+    glm::vec3 Front;
+    glm::vec3 Up;
+    glm::vec3 Right;
+    glm::vec3 WorldUp;
 
     // ------------------------------------------------------------------------------------------
-    // [CỤM 2: CÁC GÓC XOAY EULER (EULER ANGLES) VÀ THÔNG SỐ VẬN HÀNH]
+    // [CỤM 2: CÁC GÓC XOAY EULER & THÔNG SỐ VẬN HÀNH]
     // ------------------------------------------------------------------------------------------
-    float Yaw;          // Góc xoay phương ngang quanh trục Y (trái/phải)
-    float Pitch;        // Góc ngóc/chúi đầu phương dọc quanh trục X (lên/xuống)
+    float Yaw;
+    float Pitch;
 
-    float MovementSpeed;    // Tốc độ di chuyển bước đi (units/giây)
-    float MouseSensitivity; // Độ nhạy chuột khi xoay ngắm cảnh
-    float Fov;              // Góc mở trường nhìn hiện tại (Field of View - tính bằng độ)
+    float MovementSpeed;
+    float MouseSensitivity;
+    float Fov;
 
     // ------------------------------------------------------------------------------------------
-    // [CỤM 3: CƠ CHẾ CHUYỂN CẢNH "XUYÊN KÍNH" BẰNG THUẬT TOÁN NỘI SUY LERP (CHƯƠNG CG.4)]
+    // [CỤM 3: CƠ CHẾ CHUYỂN CẢNH "XUYÊN KÍNH" BẰNG THUẬT TOÁN NỘI SUY LERP]
     // ------------------------------------------------------------------------------------------
-    bool isDiving = false;  // Trạng thái: false = Trong hầm kính; true = Đang lặn tự do ngoài biển
-    glm::vec3 targetPos;    // Tọa độ mục tiêu mà camera đang nội suy lướt tới
-    float targetFov;        // Góc mở mục tiêu (60 độ trong hầm -> 85 độ góc rộng khi lặn biển)
+    bool isDiving = false;   // false = Trong hầm kính; true = Đang lặn tự do ngoài biển
+    bool cursorLocked = true; // Tab để khóa/mở khóa con trỏ chuột
+    glm::vec3 targetPos;
+    float targetFov;
+    float lerpSpeed = 8.5f;  // Tốc độ nội suy mượt mà, phản hồi nhạy tức thì
 
-    /**
-     * @brief Constructor khởi tạo camera tại lối đi giữa sàn đường hầm
-     */
-    Camera(glm::vec3 startPos = glm::vec3(0.0f, 38.0f, -350.0f)) {
+    Camera(glm::vec3 startPos = glm::vec3(0.0f, 38.0f, -380.0f)) {
         Position = startPos;
         targetPos = startPos;
         WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-        Yaw = 90.0f; // Nhìn dọc theo đường hầm (hướng về phía +Z)
-        Pitch = 8.0f; // Ngước nhẹ lên vòm kính để thấy ngay đàn cá bơi phía trên
+        Yaw = 90.0f; // Nhìn dọc theo đường hầm (+Z)
+        Pitch = 8.0f;
         Front = glm::vec3(0.0f, 0.0f, 1.0f);
-        MovementSpeed = 160.0f;
-        MouseSensitivity = 0.1f;
+        MovementSpeed = 240.0f;
+        MouseSensitivity = 0.12f;
         Fov = 65.0f;
         targetFov = 65.0f;
         updateCameraVectors();
@@ -65,10 +64,6 @@ public:
     // ------------------------------------------------------------------------------------------
     // [CỤM 4: MA TRẬN QUAN SÁT (VIEW MATRIX - CHƯƠNG CG.4)]
     // ------------------------------------------------------------------------------------------
-    /**
-     * @brief Tính toán ma trận quan sát View Matrix biến đổi tọa độ thế giới về hệ quy chiếu camera
-     * @formula glm::lookAt(Vị_trí_mắt, Điểm_ngắm_tới, Hướng_lên_đỉnh_đầu)
-     */
     glm::mat4 GetViewMatrix() const {
         return glm::lookAt(Position, Position + Front, Up);
     }
@@ -76,92 +71,111 @@ public:
     // ------------------------------------------------------------------------------------------
     // [CỤM 5: CHUYỂN ĐỔI GIỮA 2 CHẾ ĐỘ TRẢI NGHIỆM KHI NHẤN PHÍM [SPACE]]
     // ------------------------------------------------------------------------------------------
-    /**
-     * @brief Kích hoạt chuyển cảnh: Lướt xuyên qua vách kính hoặc lùi về lại sàn hầm
-     */
     void ToggleDiveMode() {
-        isDiving = !isDiving; // Đảo cờ trạng thái
+        isDiving = !isDiving;
+        lerpSpeed = 3.2f; // Lướt êm ái điện ảnh khi xuyên qua lớp kính hầm
 
         if (isDiving) {
-            // CHẾ ĐỘ 2: Đẩy tọa độ mục tiêu xuyên qua vách kính ra vùng nước mở phía trên đáy biển (Y > 0)
-            targetPos = glm::vec3(260.0f, 110.0f, glm::clamp(Position.z, -700.0f, 700.0f));
-            targetFov = 85.0f; // Mở rộng FOV điện ảnh choáng ngợp
+            // CHẾ ĐỘ 2: Lướt xuyên qua vách kính ra vùng biển mở phía trên đáy cát
+            targetPos = glm::vec3(270.0f, 120.0f, glm::clamp(Position.z, -700.0f, 700.0f));
+            targetFov = 82.0f;
         } else {
-            // CHẾ ĐỘ 1: Lùi về giữa lối đi sàn hầm khô ráo (giới hạn trong chiều dài hầm)
+            // CHẾ ĐỘ 1: Lùi về giữa lối đi sàn hầm khô ráo
             targetPos = glm::vec3(0.0f, 38.0f, glm::clamp(Position.z, -680.0f, 680.0f));
-            targetFov = 65.0f; // Trả lại góc nhìn tiêu chuẩn trong đường hầm
+            targetFov = 65.0f;
         }
     }
 
     // ------------------------------------------------------------------------------------------
-    // [CỤM 6: XỬ LÝ PHÍM WASD VỚI NỘI SUY TUYẾN TÍNH LERP (CHƯƠNG CG.4)]
+    // [CỤM 6: XỬ LÝ BÀN PHÍM TOÀN DIỆN (WASD + MŨI TÊN + E/Q LÊN XUỐNG + SHIFT TĂNG TỐC)]
     // ------------------------------------------------------------------------------------------
-    /**
-     * @brief Xử lý sự kiện bàn phím với chuyển động mượt mà
-     * @formula P_hiện_tại = glm::mix(P_hiện_tại, P_đích, dt * 3.5)
-     */
     void ProcessKeyboard(GLFWwindow* window, float deltaTime) {
-        // Thuật toán LERP (Linear Interpolation) làm mượt bước lướt camera
-        Position = glm::mix(Position, targetPos, deltaTime * 3.5f);
-        Fov      = glm::mix(Fov,      targetFov, deltaTime * 3.5f);
+        // Phục hồi dần tốc độ phản hồi nhanh sau khi hoàn tất hiệu ứng lướt SPACE
+        lerpSpeed = glm::mix(lerpSpeed, 9.5f, glm::clamp(deltaTime * 2.0f, 0.0f, 1.0f));
 
-        float velocity = MovementSpeed * deltaTime;
+        float boost = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+                       glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) ? 2.4f : 1.0f;
+        float velocity = MovementSpeed * boost * deltaTime;
+
+        bool keyForward  = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS);
+        bool keyBackward = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS);
+        bool keyLeft     = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS);
+        bool keyRight    = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS);
+        bool keyUp       = (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS);
+        bool keyDown     = (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS);
+
+        // Hỗ trợ xoay góc nhìn bằng bàn phím (J/L/I/K) phòng trường hợp người dùng dùng Trackpad
+        float keyTurnSpeed = 75.0f * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) ProcessMouseMovement(-keyTurnSpeed / MouseSensitivity, 0.0f);
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) ProcessMouseMovement( keyTurnSpeed / MouseSensitivity, 0.0f);
+        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) ProcessMouseMovement(0.0f,  keyTurnSpeed / MouseSensitivity);
+        if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) ProcessMouseMovement(0.0f, -keyTurnSpeed / MouseSensitivity);
 
         if (!isDiving) {
-            // --- CHẾ ĐỘ 1: BƯỚC ĐI TRONG HẦM KÍNH (Khóa cao độ Y = 35) ---
-            glm::vec3 walkFront = glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
-            glm::vec3 walkRight = glm::normalize(glm::vec3(Right.x, 0.0f, Right.z));
+            // --- CHẾ ĐỘ 1: ĐI BỘ TRONG HẦM KÍNH ---
+            glm::vec3 walkFront = glm::vec3(Front.x, 0.0f, Front.z);
+            if (glm::length(walkFront) < 0.001f) walkFront = glm::vec3(0.0f, 0.0f, 1.0f);
+            walkFront = glm::normalize(walkFront);
+            glm::vec3 walkRight = glm::normalize(glm::cross(walkFront, WorldUp));
 
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) targetPos += walkFront * velocity; // Tiến
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) targetPos -= walkFront * velocity; // Lùi
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetPos -= walkRight * velocity; // Sang trái
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetPos += walkRight * velocity; // Sang phải
+            if (keyForward)  targetPos += walkFront * velocity;
+            if (keyBackward) targetPos -= walkFront * velocity;
+            if (keyLeft)     targetPos -= walkRight * velocity;
+            if (keyRight)    targetPos += walkRight * velocity;
+            if (keyUp)       targetPos.y += velocity * 0.65f; // Cho phép nâng tầm mắt ngắm cá trên nóc
+            if (keyDown)     targetPos.y -= velocity * 0.65f; // Hạ tầm mắt xuống sát sàn LED
 
-            // Giới hạn người đi bộ trên sàn hầm (Không lọt xuống đáy biển)
-            targetPos.y = 35.0f;
-            if (targetPos.x > 85.0f)  targetPos.x = 85.0f;
-            if (targetPos.x < -85.0f) targetPos.x = -85.0f;
-            if (targetPos.z > 680.0f) targetPos.z = 680.0f;
-            if (targetPos.z < -680.0f) targetPos.z = -680.0f;
+            targetPos.y = glm::clamp(targetPos.y, 16.0f, 105.0f);
+            targetPos.x = glm::clamp(targetPos.x, -110.0f, 110.0f);
+            targetPos.z = glm::clamp(targetPos.z, -760.0f, 760.0f);
         } else {
             // --- CHẾ ĐỘ 2: BƠI TỰ DO 6 HƯỚNG TRONG LÒNG BIỂN (6-DOF) ---
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) targetPos += Front * velocity;
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) targetPos -= Front * velocity;
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetPos -= Right * velocity;
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetPos += Right * velocity;
-            if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) targetPos.y += velocity; // Phím E: Bơi ngoi lên
-            if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) targetPos.y -= velocity; // Phím Q: Lặn sâu xuống
+            if (keyForward)  targetPos += Front * velocity;
+            if (keyBackward) targetPos -= Front * velocity;
+            if (keyLeft)     targetPos -= Right * velocity;
+            if (keyRight)    targetPos += Right * velocity;
+            if (keyUp)       targetPos.y += velocity;
+            if (keyDown)     targetPos.y -= velocity;
 
-            // Không để người lặn chui xuống dưới đáy cát (Y >= 15) hoặc bay ra khỏi mặt nước (Y <= 520)
-            if (targetPos.y < 15.0f)  targetPos.y = 15.0f;
-            if (targetPos.y > 520.0f) targetPos.y = 520.0f;
+            targetPos.y = glm::clamp(targetPos.y, 14.0f, 500.0f);
         }
 
-        // Bắt sự kiện phím SPACE (Chống dội phím: chỉ kích hoạt 1 lần duy nhất mỗi lần bấm)
+        // Nội suy LERP mượt mà tới tọa độ mục tiêu
+        float alpha = glm::clamp(deltaTime * lerpSpeed, 0.0f, 1.0f);
+        Position = glm::mix(Position, targetPos, alpha);
+        Fov      = glm::mix(Fov,      targetFov, alpha);
+
+        // Bắt phím SPACE (chống dội phím): Chuyển đổi chế độ Đi hầm <-> Lặn biển
         static bool spacePressedLast = false;
         bool spacePressedNow = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
         if (spacePressedNow && !spacePressedLast) {
             ToggleDiveMode();
         }
         spacePressedLast = spacePressedNow;
+
+        // Bắt phím TAB: Khóa / Mở khóa con trỏ chuột
+        static bool tabPressedLast = false;
+        bool tabPressedNow = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
+        if (tabPressedNow && !tabPressedLast) {
+            cursorLocked = !cursorLocked;
+            glfwSetInputMode(window, GLFW_CURSOR, cursorLocked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        }
+        tabPressedLast = tabPressedNow;
     }
 
     // ------------------------------------------------------------------------------------------
     // [CỤM 7: XỬ LÝ XOAY CHUỘT 360 ĐỘ (EULER ANGLES)]
     // ------------------------------------------------------------------------------------------
-    /**
-     * @brief Tính toán góc quay khi rê chuột và giới hạn góc Pitch để không bị lộn ngược đầu
-     */
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true) {
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
-        Yaw   += xoffset; // Xoay ngang
-        Pitch += yoffset; // Ngóc lên / chúi xuống
+        Yaw   += xoffset;
+        Pitch += yoffset;
 
         if (constrainPitch) {
-            if (Pitch > 89.0f)  Pitch = 89.0f;  // Khóa góc ngước tối đa 89 độ
-            if (Pitch < -89.0f) Pitch = -89.0f; // Khóa góc cúi tối đa -89 độ
+            if (Pitch > 89.0f)  Pitch = 89.0f;
+            if (Pitch < -89.0f) Pitch = -89.0f;
         }
 
         updateCameraVectors();
@@ -177,8 +191,7 @@ private:
         front.y = sin(glm::radians(Pitch));
         front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         Front = glm::normalize(front);
-        
-        // Tính tích có hướng (Cross Product) để tìm hệ trục trực giao
+
         Right = glm::normalize(glm::cross(Front, WorldUp));
         Up    = glm::normalize(glm::cross(Right, Front));
     }

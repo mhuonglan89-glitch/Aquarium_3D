@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <vector>
 #include <cmath>
 #include <ctime>
@@ -97,6 +99,39 @@ Mesh createSeabedMesh() {
         }
     }
 
+    return Mesh(verts, inds);
+}
+
+// Sinh mặt nước biển gợn sóng lấp lánh ánh nắng ở trên cao (Y = 530)
+Mesh createWaterSurfaceMesh() {
+    std::vector<Vertex> verts;
+    std::vector<unsigned int> inds;
+    const int grid = 32;
+    const float size = 4400.0f;
+    const float half = size * 0.5f;
+    const float step = size / grid;
+
+    for (int iz = 0; iz <= grid; ++iz) {
+        for (int ix = 0; ix <= grid; ++ix) {
+            float x = -half + ix * step;
+            float z = -half + iz * step;
+            Vertex v;
+            v.Position = glm::vec3(x, 530.0f, z);
+            v.Normal = glm::vec3(0.0f, -1.0f, 0.0f);
+            v.TexCoords = glm::vec2(x * 0.01f, z * 0.01f);
+            verts.push_back(v);
+        }
+    }
+    for (int iz = 0; iz < grid; ++iz) {
+        for (int ix = 0; ix < grid; ++ix) {
+            unsigned int a = iz * (grid + 1) + ix;
+            unsigned int b = a + 1;
+            unsigned int c = a + (grid + 1);
+            unsigned int d = c + 1;
+            inds.push_back(a); inds.push_back(b); inds.push_back(c);
+            inds.push_back(b); inds.push_back(d); inds.push_back(c);
+        }
+    }
     return Mesh(verts, inds);
 }
 
@@ -193,6 +228,7 @@ int main() {
     // ------------------------------------------------------------------------------------------
     Shader oceanShader("assets/shaders/ocean_fog.vs", "assets/shaders/ocean_fog.fs");
     Mesh seabedMesh = createSeabedMesh();
+    Mesh waterSurfaceMesh = createWaterSurfaceMesh();
 
     // Nạp đầy đủ các sinh vật biển 3D từ Sketchfab (.obj & .glb kèm texture)
     Model whaleModel      ("assets/models/whale.glb",                     glm::vec3(0.22f, 0.34f, 0.48f));
@@ -382,12 +418,16 @@ int main() {
 
     std::cout << "========================================================\n";
     std::cout << "  3D TROPICAL AQUARIUM - THUY CUNG NHIET DOI LUNG LINH\n";
-    std::cout << "  - Phim W, A, S, D : Buoc di trong ham / Boi ngoai bien\n";
-    std::cout << "  - Re Chuot        : Xoay goc nhin 360 do\n";
-    std::cout << "  - Phim [SPACE]    : Xuyen kinh hoa minh vao long bien\n";
-    std::cout << "  - Phim E / Q      : Ngoi len / Lan sau (khi boi ngoai bien)\n";
-    std::cout << "  - Phim ESC        : Thoat chuong trinh\n";
+    std::cout << "  - W/A/S/D hoac Mui ten : Di chuyen toi lui, trai phai\n";
+    std::cout << "  - E / Q (hoac R / F)   : Di len / Xuong (Ngoi len / Lan sau)\n";
+    std::cout << "  - Left Shift           : Tang toc di chuyen / boi nhanh\n";
+    std::cout << "  - Re Chuot hoac I/J/K/L: Xoay goc nhin 360 do\n";
+    std::cout << "  - Phim [SPACE]         : Xuyen kinh ra bien / Ve ham kinh\n";
+    std::cout << "  - Phim [TAB]           : Khoa / Mo khoa con tro chuot\n";
+    std::cout << "  - Phim ESC             : Thoat chuong trinh\n";
     std::cout << "========================================================\n";
+
+    float titleTimer = 0.0f;
 
     // ------------------------------------------------------------------------------------------
     // 🟢 BƯỚC 4: VÒNG LẶP RENDER CHÍNH 60 FPS (RENDER / GAME LOOP)
@@ -395,12 +435,25 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
-        if (deltaTime > 0.05f) deltaTime = 0.05f; // Giới hạn bước thời gian tránh giật khung hình
+        if (deltaTime > 0.05f) deltaTime = 0.05f;
         lastFrame = currentFrame;
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         camera.ProcessKeyboard(window, deltaTime);
+
+        // Cập nhật thanh tiêu đề hiển thị trạng thái & phím bấm trực quan
+        titleTimer += deltaTime;
+        if (titleTimer >= 0.25f) {
+            titleTimer = 0.0f;
+            std::ostringstream title;
+            title << (camera.isDiving ? "[LAN BIEN TU DO 6-DOF]" : "[TRONG HAM KINH ACRYLIC]")
+                  << " | Pos(" << static_cast<int>(camera.Position.x) << ", "
+                  << static_cast<int>(camera.Position.y) << ", "
+                  << static_cast<int>(camera.Position.z) << ")"
+                  << " | WASD/Mui ten: Di | E/Q: Len-Xuong | SPACE: Doi che do | Shift: Nhanh | TAB: Chuot";
+            glfwSetWindowTitle(window, title.str().c_str());
+        }
 
         glClearColor(0.03f, 0.44f, 0.60f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -423,6 +476,7 @@ int main() {
             oceanShader.setMat4("model", modelSand);
             oceanShader.setBool("isFish", false);
             oceanShader.setBool("useTexture", false);
+            oceanShader.setFloat("causticStrength", 1.15f);
             oceanShader.setVec3("objectColor", glm::vec3(0.76f, 0.69f, 0.50f));
             oceanShader.setFloat("alphaVal", 1.0f);
             seabedMesh.Draw(oceanShader, 0, false, glm::vec3(0.76f, 0.69f, 0.50f));
@@ -430,6 +484,7 @@ int main() {
 
         // 1.2. Vẽ 16 cụm rạn san hô 2 bên đáy biển
         oceanShader.setBool("isFish", false);
+        oceanShader.setFloat("causticStrength", 0.85f);
         for (const auto& c : coralSpots) {
             glm::mat4 modelCoral = glm::mat4(1.0f);
             modelCoral = glm::translate(modelCoral, c.pos);
@@ -440,6 +495,7 @@ int main() {
         }
 
         // 1.3. Vẽ các sinh vật khổng lồ tuần tra theo đường cong khép kín 3D (Catmull-Rom Spline)
+        oceanShader.setFloat("causticStrength", 0.90f);
         float tWhale = fmodf(currentFrame * 0.018f, 1.0f);
         drawSplineCreature(oceanShader, whaleModel, whalePath, tWhale, 240.0f, currentFrame, 0.0f, 0.0f, 0.04f, true);
 
@@ -507,8 +563,23 @@ int main() {
         }
 
         // ======================================================================================
-        // 🫧 GIAI ĐOẠN 2: HỆ HẠT BỌT KHÍ NỔI BÁN TRONG SUỐT (CHƯƠNG CG.6)
+        // 🫧 GIAI ĐOẠN 2: MẶT NƯỚC BIỂN LẤP LÁNH & HỆ HẠT BỌT KHÍ BÁN TRONG SUỐT (CHƯƠNG CG.6)
         // ======================================================================================
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDepthMask(GL_FALSE);
+            glm::mat4 modelSurf = glm::mat4(1.0f);
+            oceanShader.setMat4("model", modelSurf);
+            oceanShader.setBool("isFish", false);
+            oceanShader.setBool("useTexture", false);
+            oceanShader.setFloat("causticStrength", 1.4f);
+            oceanShader.setVec3("objectColor", glm::vec3(0.22f, 0.78f, 0.96f));
+            oceanShader.setFloat("alphaVal", 0.55f);
+            waterSurfaceMesh.Draw(oceanShader, 0, false, glm::vec3(0.22f, 0.78f, 0.96f));
+            glDepthMask(GL_TRUE);
+        }
+
         bubbles.UpdateAndRender(deltaTime, currentFrame, camera.Position, oceanShader);
 
         // ======================================================================================
@@ -538,6 +609,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
+
+    if (!camera.cursorLocked && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS) {
+        firstMouse = true;
+        return;
+    }
 
     if (firstMouse) {
         lastX = xpos;

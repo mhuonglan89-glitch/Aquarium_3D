@@ -88,6 +88,7 @@ public:
 
         shader.setBool("useTexture", false);
         shader.setBool("isFish", false);
+        shader.setFloat("causticStrength", 0.0f);
         shader.setVec3("objectColor", glm::vec3(0.82f, 0.96f, 1.0f));
         shader.setFloat("alphaVal", 0.42f);
 
