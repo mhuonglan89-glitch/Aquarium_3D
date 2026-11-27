@@ -1,77 +1,109 @@
 #version 330 core
-// ==============================================================================
-// SHADER BIEN SAU & HE THONG CHIEU SANG (Do Ban B phu trach)
-// Anh xa kien thuc CG.6:
-// 1. Chieu sang Blinn-Phong (Ambient, Diffuse, Specular)
-// 2. Texture Mapping (Lay mau anh diffuse map da ca, san ho)
-// 3. Khuc xa tia nang mat troi (Caustics duoi day bien)
-// 4. Suong mu bien sau (Underwater Exponential Fog: fog = e^(-density * d))
-// 5. Alpha Blending cho kinh vom va mat nuoc
-// ==============================================================================
 
-in vec3 vWorldPosition;
-in vec3 vWorldNormal;
-in vec2 vTexCoord;
-in vec4 vColor;
+/**
+ * ==============================================================================================
+ * 📌 FILE: assets/shaders/ocean_fog.fs (FRAGMENT SHADER)
+ * 👤 PHỤ TRÁCH: BẠN B (Frontend / Kỹ sư Chiếu Sáng GPU & Kỹ Xảo Đại Dương)
+ * 📚 KIẾN THỨC GIÁO TRÌNH ÁNH XẠ:
+ *    - CHƯƠNG CG.6: CÁC KỸ THUẬT ĐỒ HỌA NÂNG CAO (Advanced Graphics Techniques)
+ *      1. Mô hình chiếu sáng Blinn-Phong:
+ *         -> Ambient (Môi trường tán xạ dưới nước)
+ *         -> Diffuse (Khuếch tán theo định luật Lambert)
+ *         -> Specular (Phản xạ gương qua Vector nửa đường Halfway H)
+ *      2. Hiệu ứng khúc xạ tia nắng gợn sóng (Dynamic Water Caustics)
+ *      3. Sương mù nước biển hàm mũ (Underwater Exponential Fog: Beer-Lambert Law)
+ *      4. Kính Acrylic trong suốt (Alpha Blending)
+ * ==============================================================================================
+ */
 
-uniform vec4 uTint;
-uniform vec3 uViewPosition;
-uniform vec3 uFogColor;
-uniform float uFogDensity;
-uniform float uEmission;
-uniform float uTime;
-uniform float uPattern;
-uniform float uCaustics;
-uniform sampler2D uTexture;
-uniform float uUseTexture;
+out vec4 FragColor; // Màu sắc cuối cùng xuất ra Framebuffer của pixel (r, g, b, a)
 
-out vec4 FragColor;
+// ----------------------------------------------------------------------------------------------
+// [CỤM 1: CÁC BIẾN ĐẦU VÀO NHẬN TỪ VERTEX SHADER SAU KHI NỘI SUY (VARYING INPUTS)]
+// ----------------------------------------------------------------------------------------------
+in vec3 FragPos;   // Tọa độ 3D của pixel trong Không gian Thế giới
+in vec3 Normal;    // Vector pháp tuyến của pixel trong Không gian Thế giới
+in vec2 TexCoords; // Tọa độ dán vân bề mặt (u, v)
+
+// ----------------------------------------------------------------------------------------------
+// [CỤM 2: CÁC BIẾN TOÀN CỤC UNIFORMS TRUYỀN TỪ C++]
+// ----------------------------------------------------------------------------------------------
+uniform sampler2D texture_diffuse1; // Bộ lấy mẫu Texture ảnh 2D
+uniform bool useTexture;            // Cờ: true = Dùng ảnh texture; false = Dùng màu thuần
+uniform vec3 objectColor;           // Màu cơ sở mặc định của vật thể
+uniform vec3 viewPos;               // Tọa độ camera hiện tại trong không gian thế giới
+uniform float alphaVal;             // Độ trong suốt (1.0 = Đục hoàn toàn; 0.28 = Kính trong suốt)
+uniform float time;                 // Biến thời gian tính chu kỳ sóng tia nắng Caustics
 
 void main() {
-    vec3 normal = normalize(vWorldNormal);
-    vec3 lightDirection = normalize(vec3(-0.45, 0.85, 0.38));
-    vec3 viewDirection = normalize(uViewPosition - vWorldPosition);
-    vec3 halfDirection = normalize(lightDirection + viewDirection);
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 3: ĐẶC TẢ NGUỒN SÁNG MẶT TRỜI NHIỆT ĐỚI VÀ MÔI TRƯỜNG BIỂN SÂU]
+    // ------------------------------------------------------------------------------------------
+    vec3 sunPos = vec3(0.0, 600.0, 0.0);        // Nguồn sáng mặt trời đặt trên đỉnh cao mặt nước
+    vec3 sunColor = vec3(0.85, 0.96, 1.0);       // Ánh nắng trắng xanh rực rỡ nhiệt đới
+    vec3 waterAmbient = vec3(0.18, 0.48, 0.68);  // Sắc xanh ngọc bích tán xạ của nước (Turquoise)
+    vec3 norm = normalize(Normal);               // Chuẩn hóa vector pháp tuyến về độ dài đơn vị 1.0
 
-    // 1. Blinn-Phong Lighting Components (CG.6)
-    float diff = max(dot(normal, lightDirection), 0.0);
-    float spec = pow(max(dot(normal, halfDirection), 0.0), 42.0);
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 4: THÀNH PHẦN 1 — ÁNH SÁNG MÔI TRƯỜNG TÁN XẠ (AMBIENT LIGHTING)]
+    // ------------------------------------------------------------------------------------------
+    // Mô phỏng ánh sáng xanh khuếch tán đa hướng len lỏi trong lòng đại dương
+    vec3 ambient = 0.55 * waterAmbient;
 
-    // 2. Texture Mapping & Base Color
-    vec3 baseColor = uTint.rgb;
-    baseColor *= vColor.rgb;
-    if (uUseTexture > 0.5) {
-        baseColor *= texture(uTexture, vTexCoord).rgb;
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 5: THÀNH PHẦN 2 — ÁNH SÁNG KHUẾCH TÁN LAMBERT (DIFFUSE LIGHTING)]
+    // ------------------------------------------------------------------------------------------
+    // Cường độ tỉ lệ thuận với cosin góc tạo bởi pháp tuyến và hướng tia sáng: max(dot(N, L), 0.0)
+    vec3 lightDir = normalize(sunPos - FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * sunColor * 0.75;
+
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 6: THÀNH PHẦN 3 — PHẢN XẠ GƯƠNG BLINN-PHONG (SPECULAR LIGHTING)]
+    // ------------------------------------------------------------------------------------------
+    // Sử dụng Vector nửa đường: H = normalize(L + V)
+    // Ưu điểm vượt trội so với Phong: Tính toán nhanh hơn và vệt sáng hình elip mượt mà trên vảy cá
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), 48.0); // Độ bóng cao (Shininess = 48)
+    vec3 specular = 0.65 * spec * sunColor;
+
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 7: THÀNH PHẦN 4 — GỢN SÓNG KHÚC XẠ ÁNH NẮNG NƯỚC ĐỘNG (DYNAMIC CAUSTICS)]
+    // ------------------------------------------------------------------------------------------
+    // Mô phỏng các dải tia nắng nhảy múa in bóng trên lưng cá và đáy cát bằng giao thoa sóng sin/cos
+    float caustic1 = sin(FragPos.x * 0.08 + time * 2.2) * cos(FragPos.z * 0.08 + time * 1.8);
+    float caustic2 = sin(FragPos.x * 0.12 - time * 1.5) * cos(FragPos.z * 0.12 + time * 2.5);
+    float causticIntensity = clamp((caustic1 + caustic2) * 0.5, 0.0, 1.0);
+    vec3 causticColor = vec3(0.35, 0.85, 0.95) * causticIntensity * 0.45;
+
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 8: HÒA TRỘN MÀU CƠ SỞ VỚI TỔNG CHIẾU SÁNG (LIGHTING EQUATION)]
+    // ------------------------------------------------------------------------------------------
+    vec3 baseColor = objectColor;
+    if (useTexture) {
+        baseColor = texture(texture_diffuse1, TexCoords).rgb; // Lấy màu từ ảnh Texture
     }
-    if (uPattern > 0.5) {
-        float pattern = sin(vWorldPosition.x * 27.0 + sin(vWorldPosition.y * 19.0))
-                      * sin(vWorldPosition.y * 31.0)
-                      * sin(vWorldPosition.z * 25.0);
-        float spots = step(0.91, pattern);
-        baseColor = mix(baseColor, vec3(0.76, 0.91, 1.0), spots * 0.72);
-    }
 
-    // 3. Caustics (Tia nang khuc xa tao vet loang nuoc)
-    vec2 waterUV = vWorldPosition.xz * 1.35;
-    float rippleA = sin(waterUV.x * 3.1 + uTime * 0.75
-                      + sin(waterUV.y * 2.0 - uTime * 0.45));
-    float rippleB = cos(waterUV.y * 3.7 - uTime * 0.62
-                      + cos(waterUV.x * 2.3 + uTime * 0.50));
-    float causticCell = 0.5 + 0.5 * rippleA * rippleB;
-    float caustic = 1.0 + uCaustics * 0.65 * pow(max(causticCell, 0.0), 10.0);
+    // Tổng hợp ánh sáng theo công thức Blinn-Phong: (Ambient + Diffuse + Specular + Caustics) * BaseColor
+    vec3 lightedColor = (ambient + diffuse + specular + causticColor) * baseColor;
 
-    // Blinn-Phong combined: Ambient + Diffuse + Specular
-    vec3 ambient = 0.28 * baseColor;
-    vec3 diffuseColor = 0.76 * diff * baseColor;
-    vec3 specularColor = vec3(0.55, 0.78, 0.92) * spec * 0.38;
-    vec3 litColor = (ambient + diffuseColor) * caustic + specularColor;
-    litColor += baseColor * uEmission;
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 9: THÀNH PHẦN 5 — SƯƠNG MÙ NƯỚC BIỂN HÀM MŨ (UNDERWATER EXPONENTIAL FOG)]
+    // ------------------------------------------------------------------------------------------
+    // Định luật hấp thụ quang học: fogFactor = exp(-density * distance)
+    // distance: Khoảng cách từ mắt nhìn (Camera) tới điểm ảnh
+    float distance = length(viewPos - FragPos);
+    float fogDensity = 0.00095; // Mật độ hạt lơ lửng trong nước trong vắt (nhìn xa không bị đen)
+    float fogFactor = exp(-fogDensity * distance);
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
 
-    // 4. Underwater Exponential Fog (CG.6: fog = e^(-density * distance))
-    float distanceToCamera = length(uViewPosition - vWorldPosition);
-    float fogFactor = exp(-uFogDensity * distanceToCamera);
-    vec3 finalColor = mix(uFogColor, litColor, clamp(fogFactor, 0.0, 1.0));
+    // Bảng màu đại dương chuẩn hệ thống: Màu xanh ngọc nhiệt đới (#044a63 / #068da9)
+    vec3 tropicalOceanCyan = vec3(0.04, 0.42, 0.58);
+    
+    // Hàm mix(A, B, t) = A*(1-t) + B*t: Càng ở xa, màu sắc càng hòa tan vào màu xanh nước biển
+    vec3 finalColor = mix(tropicalOceanCyan, lightedColor, fogFactor);
 
-    // 5. Alpha Blending (CG.6: glBlendFunc, uTint.a xu ly do trong suot kinh va nuoc)
-    FragColor = vec4(finalColor, uTint.a * vColor.a);
+    // Xuất màu cuối cùng kèm độ trong suốt alphaVal phục vụ Alpha Blending vòm kính
+    FragColor = vec4(finalColor, alphaVal);
 }

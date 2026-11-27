@@ -1,45 +1,66 @@
 #version 330 core
-layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in vec4 aColor;
 
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
-uniform float uTime;
-uniform float uSwim;
+/**
+ * ==============================================================================================
+ * 📌 FILE: assets/shaders/ocean_fog.vs (VERTEX SHADER)
+ * 👤 PHỤ TRÁCH: BẠN B (Frontend / Kỹ sư Lập trình Pipeline Đồ Họa GLSL)
+ * 📚 KIẾN THỨC GIÁO TRÌNH ÁNH XẠ:
+ *    - CHƯƠNG CG.2 & CG.4: BIẾN ĐỔI KHÔNG GIAN TỌA ĐỘ TRONG PIPELINE
+ *      -> Model Space -> World Space -> View Space -> Clip Space
+ *      -> Ma trận MVP: gl_Position = projection * view * model * vec4(aPos, 1.0)
+ *      -> Ma trận biến đổi vector pháp tuyến: Normal Matrix = transpose(inverse(model))
+ *    - CHƯƠNG CG.3: DAO ĐỘNG UỐN LƯỢN VÂY ĐUÔI CÁ THEO HÀM SIN (Hierarchical Fish Motion)
+ * ==============================================================================================
+ */
 
-out vec3 vWorldPosition;
-out vec3 vWorldNormal;
-out vec2 vTexCoord;
-out vec4 vColor;
+// ----------------------------------------------------------------------------------------------
+// [CỤM 1: CÁC THUỘC TÍNH ĐỈNH ĐẦU VÀO TỪ VBO (VERTEX ATTRIBUTES)]
+// ----------------------------------------------------------------------------------------------
+layout (location = 0) in vec3 aPos;       // Vị trí đỉnh cục bộ (x, y, z)
+layout (location = 1) in vec3 aNormal;    // Vector pháp tuyến đỉnh cục bộ (nx, ny, nz)
+layout (location = 2) in vec2 aTexCoords; // Tọa độ vân bề mặt (u, v)
+
+// ----------------------------------------------------------------------------------------------
+// [CỤM 2: DỮ LIỆU ĐẦU RA TRUYỀN SANG GIAI ĐOẠN RASTERIZATION & FRAGMENT SHADER]
+// ----------------------------------------------------------------------------------------------
+out vec3 FragPos;   // Tọa độ đỉnh trong không gian thế giới (World Space)
+out vec3 Normal;    // Vector pháp tuyến đã biến đổi sang không gian thế giới
+out vec2 TexCoords; // Tọa độ Texture truyền tiếp cho Fragment Shader
+
+// ----------------------------------------------------------------------------------------------
+// [CỤM 3: CÁC BIẾN TOÀN CỤC UNIFORMS NHẬN TỪ CPU (C++)]
+// ----------------------------------------------------------------------------------------------
+uniform mat4 model;      // Ma trận mô hình: Tịnh tiến, Xoay, Co dãn (TRS)
+uniform mat4 view;       // Ma trận quan sát Camera (LookAt)
+uniform mat4 projection; // Ma trận chiếu phối cảnh (Perspective Projection)
+uniform float time;      // Biến thời gian thực để tạo dao động sinh học
+uniform bool isFish;     // Cờ: true = Áp dụng hiệu ứng uốn đuôi cá; false = Vật thể tĩnh
 
 void main() {
-    vec3 localPosition = aPosition;
-    if (uSwim > 0.5 && uSwim < 1.5) {
-        // Cá mập OBJ cũ có thân chạy theo trục X.
-        float tailWeight = clamp((-aPosition.x - 0.10) / 1.55, 0.0, 1.0);
-        localPosition.z += sin(uTime * 4.2 + aPosition.x * 3.0) * 0.085 * tailWeight;
-        localPosition.y += sin(uTime * 2.1 + aPosition.x * 2.2) * 0.018 * tailWeight;
-    } else if (uSwim > 3.5 && uSwim < 4.5) {
-        // Cá đuối có hai cánh trải theo trục Z sau khi đổi sang hệ +X-forward.
-        float wingDistance = abs(aPosition.z);
-        float wingWeight = clamp((wingDistance - 0.10) * 1.7, 0.0, 1.0);
-        float wingPhase = uTime * 2.2 + wingDistance * 3.4;
-        localPosition.y += sin(wingPhase) * 0.10 * wingWeight;
-        localPosition.x += cos(wingPhase) * 0.018 * wingWeight;
-    } else if (uSwim > 1.5) {
-        // Các GLB mới có thân theo trục Z; uSwim > 2.5 đảo phía đuôi.
-        float tailSide = uSwim > 2.5 ? 1.0 : -1.0;
-        float tailWeight = clamp((tailSide * aPosition.z - 0.035) * 8.0, 0.0, 1.0);
-        localPosition.x += sin(uTime * 3.4 + aPosition.z * 8.0) * 0.020 * tailWeight;
-        localPosition.y += sin(uTime * 1.8 + aPosition.z * 6.0) * 0.006 * tailWeight;
+    vec3 pos = aPos;
+    
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 4: HIỆU ỨNG DAO ĐỘNG UỐN ĐUÔI CÁ THEO HÀM SIN (CHƯƠNG CG.3)]
+    // ------------------------------------------------------------------------------------------
+    // Nếu là loài cá và phần thân nằm về phía đuôi (trục z < -2.0), tạo dao động lắc lư theo trục X
+    if (isFish && pos.z < -2.0) {
+        float wag = sin(time * 5.5 - pos.z * 0.1) * 0.06 * (-pos.z);
+        pos.x += wag; // Uốn cong thân cá sang trái/phải
     }
-    vec4 worldPosition = uModel * vec4(localPosition, 1.0);
-    vWorldPosition = worldPosition.xyz;
-    vWorldNormal = mat3(transpose(inverse(uModel))) * aNormal;
-    vTexCoord = aTexCoord;
-    vColor = aColor;
-    gl_Position = uProjection * uView * worldPosition;
+
+    // ------------------------------------------------------------------------------------------
+    // [CỤM 5: CHUỖI BIẾN ĐỔI MA TRẬN KHÔNG GIAN (MVP TRANSFORMATION)]
+    // ------------------------------------------------------------------------------------------
+    // 1. Tính tọa độ điểm ảnh trong Thế giới: FragPos = Model * vec4(pos, 1.0)
+    FragPos = vec3(model * vec4(pos, 1.0));
+
+    // 2. Tính Vector pháp tuyến trong Thế giới bằng Ma trận chuyển vị nghịch đảo (Normal Matrix)
+    // Giúp bảo toàn tính trực giao góc 90 độ khi vật thể bị co dãn không đồng đều (Non-uniform scale)
+    Normal = mat3(transpose(inverse(model))) * aNormal;
+
+    // 3. Chuyển tiếp tọa độ UV
+    TexCoords = aTexCoords;
+
+    // 4. Tọa độ đỉnh cuối cùng trong Không gian Cắt đồng nhất (Clip Space):
+    gl_Position = projection * view * vec4(FragPos, 1.0);
 }
